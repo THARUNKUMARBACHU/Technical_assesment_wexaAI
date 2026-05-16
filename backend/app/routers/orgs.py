@@ -149,20 +149,19 @@ async def create_invitation(
     svc = InviteService(db)
     inv = await svc.create_invitation(org_id, body.email, body.role, user.id)
 
-    # Send invitation email
+    # Send invitation email in background thread (SMTP is synchronous/slow)
     from app.repositories.auth import OrgRepo
-    from app.services.email import send_invite_email
     org = await OrgRepo(db).get_by_id(org_id)
     org_name = org.name if org else "your organization"
     raw_token = getattr(inv, "_raw_token", None)
     if raw_token:
-        send_invite_email(
-            to_email=body.email,
-            org_name=org_name,
-            role=body.role,
-            invite_token=raw_token,
-            inviter_name=user.full_name,
-        )
+        import threading
+        from app.services.email import send_invite_email
+        threading.Thread(
+            target=send_invite_email,
+            args=(body.email, org_name, body.role, raw_token, user.full_name),
+            daemon=True,
+        ).start()
 
     return InvitationOut.model_validate(inv)
 
