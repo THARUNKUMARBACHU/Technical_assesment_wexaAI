@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 
 def send_invite_email(to_email: str, org_name: str, role: str, invite_token: str, inviter_name: str) -> bool:
     """Send an invitation email with the accept link."""
+    logger.info("[EMAIL] send_invite_email called — to=%s, org=%s, role=%s, inviter=%s", to_email, org_name, role, inviter_name)
     invite_url = f"{settings.frontend_url}/invite/{invite_token}"
     subject = f"You've been invited to join {org_name}"
     html = f"""
@@ -119,8 +120,12 @@ def send_alert_email(to_emails: list[str], rule_name: str, severity: str, org_na
 
 def _send(to_email: str, subject: str, html: str, text: str) -> bool:
     """Send an email via Gmail SMTP or log to console."""
+    logger.info("[EMAIL] _send called — to=%s, subject=%s", to_email, subject)
+    logger.info("[EMAIL] SMTP config — host=%s, port=%s, user=%s, password_set=%s",
+                settings.smtp_host, settings.smtp_port, settings.smtp_user, bool(settings.smtp_password))
+
     if not settings.smtp_user or not settings.smtp_password:
-        logger.info("[EMAIL-LOG] To: %s | Subject: %s | %s", to_email, subject, text[:200])
+        logger.info("[EMAIL-LOG] No SMTP credentials — To: %s | Subject: %s | %s", to_email, subject, text[:200])
         return True
 
     try:
@@ -131,13 +136,25 @@ def _send(to_email: str, subject: str, html: str, text: str) -> bool:
         msg.attach(MIMEText(text, "plain"))
         msg.attach(MIMEText(html, "html"))
 
-        with smtplib.SMTP(settings.smtp_host, settings.smtp_port) as server:
-            server.starttls()
-            server.login(settings.smtp_user, settings.smtp_password)
-            server.sendmail(settings.smtp_user, to_email, msg.as_string())
+        port = settings.smtp_port
+        if port == 465:
+            logger.info("[EMAIL] Connecting via SMTP_SSL to %s:%s ...", settings.smtp_host, port)
+            with smtplib.SMTP_SSL(settings.smtp_host, port, timeout=15) as server:
+                logger.info("[EMAIL] Connected. Logging in as %s ...", settings.smtp_user)
+                server.login(settings.smtp_user, settings.smtp_password)
+                logger.info("[EMAIL] Logged in. Sending to %s ...", to_email)
+                server.sendmail(settings.smtp_user, to_email, msg.as_string())
+        else:
+            logger.info("[EMAIL] Connecting via STARTTLS to %s:%s ...", settings.smtp_host, port)
+            with smtplib.SMTP(settings.smtp_host, port, timeout=15) as server:
+                server.starttls()
+                logger.info("[EMAIL] STARTTLS done. Logging in as %s ...", settings.smtp_user)
+                server.login(settings.smtp_user, settings.smtp_password)
+                logger.info("[EMAIL] Logged in. Sending to %s ...", to_email)
+                server.sendmail(settings.smtp_user, to_email, msg.as_string())
 
-        logger.info("Email sent to %s: %s", to_email, subject)
+        logger.info("[EMAIL] Successfully sent to %s: %s", to_email, subject)
         return True
     except Exception:
-        logger.exception("Failed to send email to %s", to_email)
+        logger.exception("[EMAIL] Failed to send email to %s", to_email)
         return False
