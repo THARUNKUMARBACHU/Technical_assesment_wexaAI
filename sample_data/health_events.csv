@@ -1,0 +1,104 @@
+timestamp,event_type,event_name,actor_id,numeric_value,category,department,severity,description
+2026-05-01 08:15:00,patient_visit,Emergency Room Visit,patient_1001,1,emergency,ER,high,Chest pain reported
+2026-05-01 09:30:00,patient_visit,Outpatient Checkup,patient_1002,1,outpatient,General Medicine,low,Routine annual checkup
+2026-05-01 10:00:00,lab_test,Blood Panel,patient_1001,245.5,diagnostic,Pathology,medium,Complete blood count
+2026-05-01 10:45:00,patient_visit,Scheduled Surgery,patient_1003,1,inpatient,Orthopedics,high,Knee replacement surgery
+2026-05-01 11:00:00,prescription,Medication Prescribed,patient_1002,3,pharmacy,General Medicine,low,Prescribed 3 medications
+2026-05-01 11:30:00,lab_test,X-Ray,patient_1003,1,diagnostic,Radiology,medium,Pre-surgery imaging
+2026-05-01 12:00:00,patient_discharge,Patient Discharged,patient_1002,1,outpatient,General Medicine,low,Discharged after checkup
+2026-05-01 13:15:00,patient_visit,Walk-in Consultation,patient_1004,1,outpatient,Dermatology,low,Skin rash evaluation
+2026-05-01 14:00:00,billing,Insurance Claim Filed,patient_1001,2500.00,finance,Billing,medium,ER visit claim
+2026-05-01 14:30:00,lab_test,MRI Scan,patient_1003,1,diagnostic,Radiology,high,Post-surgery MRI
+2026-05-01 15:00:00,patient_visit,Telemedicine Call,patient_1005,1,telehealth,Psychiatry,medium,Follow-up consultation
+2026-05-01 15:45:00,prescription,Medication Refill,patient_1005,2,pharmacy,Psychiatry,low,Refilled 2 prescriptions
+2026-05-01 16:00:00,staff_action,Shift Handover,staff_201,8,operations,Nursing,low,Completed 8-hour shift
+2026-05-01 16:30:00,patient_visit,Emergency Room Visit,patient_1006,1,emergency,ER,critical,Severe allergic reaction
+2026-05-01 17:00:00,lab_test,Allergy Panel,patient_1006,12,diagnostic,Pathology,high,Testing 12 allergens
+2026-05-02 07:00:00,staff_action,Morning Rounds,staff_102,15,operations,Internal Medicine,low,Reviewed 15 patients
+2026-05-02 08:00:00,patient_visit,Outpatient Checkup,patient_1007,1,outpatient,Cardiology,medium,Heart palpitations follow-up
+2026-05-02 08:30:00,lab_test,ECG,patient_1007,72,diagnostic,Cardiology,medium,Heart rate 72 bpm
+2026-05-02 09:00:00,patient_visit,Scheduled Surgery,patient_1008,1,inpatient,General Surgery,high,Appendectomy
+2026-05-02 09:30:00,patient_admission,Patient Admitted,patient_1008,1,inpatient,General Surgery,high,Pre-surgery admission
+2026-05-02 10:00:00,billing,Payment Received,patient_1004,150.00,finance,Billing,low,Co-pay received
+2026-05-02 10:30:00,patient_visit,Walk-in Consultation,patient_1009,1,outpatient,ENT,low,Ear infection
+2026-05-02 11:00:00,prescription,Medication Prescribed,patient_1009,1,pharmacy,ENT,low,Prescribed antibiotics
+2026-05-02 11:30:00,lab_test,Blood Sugar Test,patient_1010,186.5,diagnostic,Endocrinology,high,Elevated glucose level
+2026-05-02 12:00:00,patient_visit,Diabetes Consultation,patient_1010,1,outpatient,Endocrinology,high,New diabetes diagnosis
+2026-05-02 13:00:00,prescription,Insulin Prescribed,patient_1010,2,pharmacy,Endocrinology,high,Started insulin therapy
+2026-05-02 14:00:00,patient_discharge,Patient Discharged,patient_1008,1,inpatient,General Surgery,medium,Post-surgery discharge
+2026-05-02 14:30:00,patient_visit,Telemedicine Call,patient_1011,1,telehealth,Pediatrics,low,Child fever consultation
+2026-05-02 15:00:00,billing,Insurance Claim Filed,patient_1008,8500.00,finance,Billing,medium,Surgery claim
+2026-05-02 15:30:00,lab_test,Urine Analysis,patient_1012,1,diagnostic,Pathology,low,Routine screening
+2026-05-03 07:30:00,staff_action,Morning Rounds,staff_103,12,operations,Pediatrics,low,Reviewed 12 patients
+2026-05-03 08:00:00,patient_visit,Emergency Room Visit,patient_1013,1,emergency,ER,critical,Motor vehicle accident
+2026-05-03 08:15:00,lab_test,CT Scan,patient_1013,1,diagnostic,Radiology,critical,Trauma imaging
+2026-05-03 08:30:00,patient_admission,Patient Admitted,patient_1013,1,inpatient,Trauma,critical,ICU admission
+2026-05-03 09:00:00,patient_visit,Outpatient Checkup,patient_1014,1,outpatient,Ophthalmology,low,Annual eye exam
+2026-05-03 09:30:00,patient_visit,Outpatient Checkup,patient_1015,1,outpatient,Gynecology,low,Routine prenatal visit
+2026-05-03 10:00:00,lab_test,Ultrasound,patient_1015,1,diagnostic,Obstetrics,low,20-week scan
+2026-05-03 10:30:00,patient_visit,Walk-in Consultation,patient_1016,1,outpatient,Orthopedics,medium,Sprained ankle
+2026-05-03 11:00:00,lab_test,X-Ray,patient_1016,1,diagnostic,Radiology,medium,Ankle imaging
+2026-05-03 11:30:00,prescription,Pain Medication,patient_1016,1,pharmacy,Orthopedics,low,Prescribed painkillers
+2026-05-03 12:00:00,billing,Insurance Claim Filed,patient_1013,15000.00,finance,Billing,high,Trauma care claim
+2026-05-03 13:00:00,patient_visit,Telemedicine Call,patient_1017,1,telehealth,Neurology,medium,Migraine follow-up
+2026-05-03 13:30:00,prescription,Medication Adjusted,patient_1017,1,pharmacy,Neurology,medium,Changed migraine medication
+2026-05-03 14:00:00,staff_action,Equipment Maintenance,staff_301,3,operations,Biomedical,low,Maintained 3 devices
+2026-05-03 14:30:00,patient_visit,Scheduled Surgery,patient_1018,1,inpatient,Cardiology,critical,Cardiac catheterization
+2026-05-03 15:00:00,lab_test,Cardiac Enzymes,patient_1018,0.8,diagnostic,Pathology,high,Troponin level check
+2026-05-03 15:30:00,patient_discharge,Patient Discharged,patient_1018,1,inpatient,Cardiology,medium,Stable post-procedure
+2026-05-03 16:00:00,billing,Payment Received,patient_1016,75.00,finance,Billing,low,Co-pay received
+2026-05-04 07:00:00,staff_action,Morning Rounds,staff_104,18,operations,General Medicine,low,Reviewed 18 patients
+2026-05-04 08:00:00,patient_visit,Emergency Room Visit,patient_1019,1,emergency,ER,high,Breathing difficulty
+2026-05-04 08:15:00,lab_test,Chest X-Ray,patient_1019,1,diagnostic,Radiology,high,Respiratory imaging
+2026-05-04 08:30:00,lab_test,Pulse Oximetry,patient_1019,91,diagnostic,ER,high,Oxygen saturation 91%
+2026-05-04 09:00:00,patient_admission,Patient Admitted,patient_1019,1,inpatient,Pulmonology,high,Pneumonia admission
+2026-05-04 09:30:00,patient_visit,Outpatient Checkup,patient_1020,1,outpatient,Oncology,high,Chemotherapy follow-up
+2026-05-04 10:00:00,lab_test,Blood Panel,patient_1020,3.2,diagnostic,Pathology,high,White blood cell count
+2026-05-04 10:30:00,prescription,Chemotherapy Dose,patient_1020,1,pharmacy,Oncology,high,Cycle 4 administered
+2026-05-04 11:00:00,patient_visit,Walk-in Consultation,patient_1021,1,outpatient,Dermatology,low,Mole evaluation
+2026-05-04 11:30:00,patient_visit,Telemedicine Call,patient_1022,1,telehealth,General Medicine,low,Cold and flu symptoms
+2026-05-04 12:00:00,prescription,Medication Prescribed,patient_1022,2,pharmacy,General Medicine,low,Over-the-counter recommendations
+2026-05-04 13:00:00,billing,Insurance Claim Filed,patient_1019,4200.00,finance,Billing,medium,Pneumonia treatment claim
+2026-05-04 13:30:00,billing,Insurance Claim Filed,patient_1020,12000.00,finance,Billing,high,Chemotherapy claim
+2026-05-04 14:00:00,patient_visit,Outpatient Checkup,patient_1023,1,outpatient,Urology,medium,Kidney stone follow-up
+2026-05-04 14:30:00,lab_test,Kidney Function Panel,patient_1023,1.2,diagnostic,Pathology,medium,Creatinine level
+2026-05-04 15:00:00,patient_discharge,Patient Discharged,patient_1019,1,inpatient,Pulmonology,medium,Responding to antibiotics
+2026-05-04 15:30:00,staff_action,Shift Handover,staff_202,8,operations,Nursing,low,Completed 8-hour shift
+2026-05-05 07:30:00,staff_action,Morning Rounds,staff_105,14,operations,Cardiology,low,Reviewed 14 patients
+2026-05-05 08:00:00,patient_visit,Emergency Room Visit,patient_1024,1,emergency,ER,high,Broken arm
+2026-05-05 08:15:00,lab_test,X-Ray,patient_1024,1,diagnostic,Radiology,high,Forearm fracture confirmed
+2026-05-05 08:45:00,patient_visit,Orthopedic Consult,patient_1024,1,outpatient,Orthopedics,medium,Cast application
+2026-05-05 09:00:00,patient_visit,Outpatient Checkup,patient_1025,1,outpatient,Rheumatology,medium,Arthritis management
+2026-05-05 09:30:00,lab_test,Inflammatory Markers,patient_1025,42,diagnostic,Pathology,medium,CRP level elevated
+2026-05-05 10:00:00,prescription,Anti-inflammatory,patient_1025,1,pharmacy,Rheumatology,medium,New biologic prescribed
+2026-05-05 10:30:00,patient_visit,Scheduled Surgery,patient_1026,1,inpatient,Ophthalmology,medium,Cataract surgery
+2026-05-05 11:00:00,patient_discharge,Patient Discharged,patient_1026,1,outpatient,Ophthalmology,low,Same-day discharge
+2026-05-05 11:30:00,billing,Payment Received,patient_1024,200.00,finance,Billing,low,ER co-pay
+2026-05-05 12:00:00,patient_visit,Telemedicine Call,patient_1027,1,telehealth,Endocrinology,low,Thyroid medication review
+2026-05-05 13:00:00,lab_test,Thyroid Panel,patient_1027,4.8,diagnostic,Pathology,low,TSH within normal range
+2026-05-05 13:30:00,patient_visit,Walk-in Consultation,patient_1028,1,outpatient,General Medicine,low,Back pain
+2026-05-05 14:00:00,prescription,Muscle Relaxant,patient_1028,1,pharmacy,General Medicine,low,Short-term prescription
+2026-05-05 14:30:00,billing,Insurance Claim Filed,patient_1026,3500.00,finance,Billing,medium,Cataract surgery claim
+2026-05-05 15:00:00,staff_action,Equipment Maintenance,staff_302,5,operations,Biomedical,low,Maintained 5 devices
+2026-05-05 15:30:00,patient_visit,Outpatient Checkup,patient_1010,1,outpatient,Endocrinology,medium,Diabetes follow-up
+2026-05-05 16:00:00,lab_test,HbA1c,patient_1010,7.2,diagnostic,Endocrinology,medium,Glycated hemoglobin test
+2026-05-06 07:00:00,staff_action,Morning Rounds,staff_106,20,operations,ER,low,Reviewed 20 patients
+2026-05-06 08:00:00,patient_visit,Emergency Room Visit,patient_1029,1,emergency,ER,critical,Stroke symptoms
+2026-05-06 08:05:00,lab_test,CT Scan,patient_1029,1,diagnostic,Radiology,critical,Emergency brain imaging
+2026-05-06 08:15:00,patient_admission,Patient Admitted,patient_1029,1,inpatient,Neurology,critical,Stroke unit admission
+2026-05-06 08:30:00,prescription,Thrombolytics,patient_1029,1,pharmacy,Neurology,critical,tPA administered
+2026-05-06 09:00:00,patient_visit,Outpatient Checkup,patient_1030,1,outpatient,Gastroenterology,medium,IBS management
+2026-05-06 09:30:00,patient_visit,Outpatient Checkup,patient_1031,1,outpatient,Allergy,low,Seasonal allergy review
+2026-05-06 10:00:00,prescription,Allergy Medication,patient_1031,2,pharmacy,Allergy,low,Antihistamine and nasal spray
+2026-05-06 10:30:00,patient_visit,Walk-in Consultation,patient_1032,1,outpatient,Dermatology,medium,Eczema flare-up
+2026-05-06 11:00:00,prescription,Topical Steroid,patient_1032,1,pharmacy,Dermatology,low,Prescription cream
+2026-05-06 11:30:00,billing,Insurance Claim Filed,patient_1029,28000.00,finance,Billing,critical,Stroke treatment claim
+2026-05-06 12:00:00,patient_visit,Telemedicine Call,patient_1033,1,telehealth,Psychiatry,medium,Anxiety follow-up
+2026-05-06 12:30:00,prescription,Medication Adjusted,patient_1033,1,pharmacy,Psychiatry,medium,Dosage adjustment
+2026-05-06 13:00:00,lab_test,Liver Function,patient_1030,1,diagnostic,Pathology,medium,Hepatic panel
+2026-05-06 13:30:00,patient_visit,Outpatient Checkup,patient_1034,1,outpatient,Pulmonology,medium,Asthma management
+2026-05-06 14:00:00,lab_test,Pulmonary Function,patient_1034,78,diagnostic,Pulmonology,medium,FEV1 at 78% predicted
+2026-05-06 14:30:00,prescription,Inhaler Refill,patient_1034,2,pharmacy,Pulmonology,low,Maintenance and rescue inhalers
+2026-05-06 15:00:00,billing,Payment Received,patient_1030,100.00,finance,Billing,low,Specialist co-pay
+2026-05-06 15:30:00,patient_discharge,Patient Discharged,patient_1013,1,inpatient,Trauma,medium,Transferred to rehab
+2026-05-06 16:00:00,staff_action,Shift Handover,staff_203,12,operations,Nursing,low,Completed 12-hour shift
