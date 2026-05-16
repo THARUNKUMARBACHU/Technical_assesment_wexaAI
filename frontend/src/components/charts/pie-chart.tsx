@@ -72,10 +72,10 @@ export function PieChartWidget({ data }: PieChartWidgetProps) {
             fontSize: "12px",
             color: "hsl(var(--popover-foreground))",
           }}
-          formatter={(value: number) => [
-            `${value.toLocaleString()} (${total > 0 ? ((value / total) * 100).toFixed(1) : 0}%)`,
-            "",
-          ]}
+          formatter={(value) => {
+            const v = Number(value);
+            return [`${v.toLocaleString()} (${total > 0 ? ((v / total) * 100).toFixed(1) : 0}%)`, ""];
+          }}
         />
         <Legend
           wrapperStyle={{ fontSize: "11px", overflow: "hidden", maxHeight: "40px", color: "hsl(var(--foreground))" }}

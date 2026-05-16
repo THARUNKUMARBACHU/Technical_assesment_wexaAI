@@ -77,7 +77,7 @@ export function LineChartWidget({ data }: LineChartWidgetProps) {
             color: "hsl(var(--popover-foreground))",
             boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
           }}
-          formatter={(value: number) => [value.toLocaleString(), ""]}
+          formatter={(value) => [Number(value).toLocaleString(), ""]}
         />
         {data.datasets.length > 1 && (
           <Legend

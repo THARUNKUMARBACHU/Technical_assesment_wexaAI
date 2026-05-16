@@ -77,7 +77,7 @@ export function BarChartWidget({ data }: BarChartWidgetProps) {
             color: "hsl(var(--popover-foreground))",
             boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
           }}
-          formatter={(value: number) => [value.toLocaleString(), ""]}
+          formatter={(value) => [Number(value).toLocaleString(), ""]}
           cursor={{ fill: "hsl(var(--muted))", opacity: 0.3 }}
         />
         {data.datasets.length > 1 && (
