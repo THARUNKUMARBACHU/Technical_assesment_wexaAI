@@ -10,6 +10,7 @@ from app.celery_app import celery
 from app.celery_app.sync_db import SyncSessionLocal
 from app.config import settings
 from app.models.alert import AlertEvent, AlertRule
+from app.models.auth import Organization
 from app.models.ingestion import Event
 
 logger = logging.getLogger(__name__)
@@ -157,6 +158,30 @@ def evaluate_alert_rules(self):
                             logger.info("Published alert to Redis channel %s", channel)
                         except Exception as pub_err:
                             logger.error("Failed to publish alert to Redis: %s", pub_err)
+
+                        # Send email notifications
+                        channels = rule.notification_channels or []
+                        recipients = rule.email_recipients or []
+                        if "email" in channels and recipients:
+                            try:
+                                from app.services.email import send_alert_email
+                                org = session.execute(
+                                    select(Organization).where(Organization.id == rule.org_id)
+                                ).scalar_one_or_none()
+                                org_name = org.name if org else "Unknown"
+                                send_alert_email(
+                                    to_emails=recipients,
+                                    rule_name=rule.name,
+                                    severity=rule.severity,
+                                    org_name=org_name,
+                                    metric=metric,
+                                    operator=operator,
+                                    threshold=threshold,
+                                    actual_value=value,
+                                    event_type=event_type,
+                                )
+                            except Exception as email_err:
+                                logger.error("Failed to send alert email: %s", email_err)
 
                 except Exception as rule_err:
                     logger.error("Error evaluating rule %s: %s", rule.id, rule_err)

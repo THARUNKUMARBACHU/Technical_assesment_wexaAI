@@ -6,10 +6,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-import { api } from "@/lib/api-client";
+import { api, getAccessToken, setAccessToken } from "@/lib/api-client";
 import type { AcceptInviteRequest } from "@/types/api";
 import { Button } from "@/components/ui/button";
 import {
@@ -37,10 +37,22 @@ export default function AcceptInvitePage({
 }) {
   const { token } = use(params);
   const router = useRouter();
+  const queryClient = useQueryClient();
+  const isLoggedIn = !!getAccessToken();
 
   const acceptInvite = useMutation({
     mutationFn: (data: AcceptInviteRequest) =>
-      api.post(`/auth/accept-invite/${token}`, data),
+      api.post<{ access_token: string; refresh_token: string }>(
+        `/auth/accept-invite/${token}`,
+        data,
+      ),
+  });
+
+  const acceptInviteAuth = useMutation({
+    mutationFn: () =>
+      api.post<{ access_token: string; refresh_token: string }>(
+        `/auth/accept-invite-authenticated/${token}`,
+      ),
   });
 
   const {
@@ -52,11 +64,14 @@ export default function AcceptInvitePage({
     defaultValues: { full_name: "", password: "" },
   });
 
-  async function onSubmit(data: InviteFormValues) {
+  async function onSubmitNew(data: InviteFormValues) {
     try {
-      await acceptInvite.mutateAsync(data);
-      toast.success("Invitation accepted! Please sign in.");
-      router.push("/login");
+      const result = await acceptInvite.mutateAsync(data);
+      setAccessToken(result.access_token);
+      localStorage.setItem("refresh_token", result.refresh_token);
+      queryClient.invalidateQueries();
+      toast.success("Welcome! You've joined the organization.");
+      router.push("/dashboards");
     } catch (error: unknown) {
       const message =
         error instanceof Error
@@ -66,15 +81,55 @@ export default function AcceptInvitePage({
     }
   }
 
+  async function onJoinExisting() {
+    try {
+      const result = await acceptInviteAuth.mutateAsync();
+      setAccessToken(result.access_token);
+      localStorage.setItem("refresh_token", result.refresh_token);
+      queryClient.invalidateQueries();
+      toast.success("You've joined the organization! Switched to the new org.");
+      router.push("/dashboards");
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Failed to accept invitation. The link may have expired.";
+      toast.error(message);
+    }
+  }
+
+  if (isLoggedIn) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Join organization</CardTitle>
+          <CardDescription>
+            You&apos;ve been invited to join an organization. Click below to
+            accept.
+          </CardDescription>
+        </CardHeader>
+        <CardFooter className="flex flex-col gap-4">
+          <Button
+            className="w-full"
+            onClick={onJoinExisting}
+            disabled={acceptInviteAuth.isPending}
+          >
+            {acceptInviteAuth.isPending ? "Joining..." : "Join organization"}
+          </Button>
+        </CardFooter>
+      </Card>
+    );
+  }
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>Accept invitation</CardTitle>
         <CardDescription>
-          Complete your profile to join the organization
+          Create your account to join the organization
         </CardDescription>
       </CardHeader>
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <form onSubmit={handleSubmit(onSubmitNew)}>
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="full_name">Full name</Label>
@@ -117,8 +172,11 @@ export default function AcceptInvitePage({
           </Button>
           <p className="text-sm text-muted-foreground">
             Already have an account?{" "}
-            <Link href="/login" className="text-primary underline-offset-4 hover:underline">
-              Sign in
+            <Link
+              href={`/login?redirect=/invite/${token}`}
+              className="text-primary underline-offset-4 hover:underline"
+            >
+              Sign in first
             </Link>
           </p>
         </CardFooter>

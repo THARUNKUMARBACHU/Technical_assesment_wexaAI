@@ -11,6 +11,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 load_dotenv()
 
+from app.config import settings  # noqa: E402
 from app.models import Base  # noqa: E402
 
 config = context.config
@@ -22,7 +23,7 @@ target_metadata = Base.metadata
 
 
 def get_sync_url() -> str:
-    return os.environ["DATABASE_URL_SYNC"]
+    return settings.sync_database_url
 
 
 def run_migrations_offline() -> None:

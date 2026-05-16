@@ -3,7 +3,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
 
@@ -29,6 +29,8 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get("redirect");
   const login = useLogin();
 
   const {
@@ -43,7 +45,7 @@ export default function LoginPage() {
   async function onSubmit(data: LoginFormValues) {
     try {
       await login.mutateAsync(data);
-      router.push("/dashboards");
+      router.push(redirectTo || "/dashboards");
     } catch (error: unknown) {
       const message =
         error instanceof Error ? error.message : "Login failed. Please try again.";

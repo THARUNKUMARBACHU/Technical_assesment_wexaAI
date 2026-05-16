@@ -214,3 +214,31 @@ class InviteService:
         await self.db.flush()
 
         return {"user": user, "org_id": invitation.org_id, "role": invitation.role}
+
+    async def accept_invitation_authenticated(self, token: str, user_id: UUID) -> dict:
+        """Accept an invitation for an already-authenticated user."""
+        token_hash = hash_token(token)
+        invitation = await self.invitations.get_by_token_hash(token_hash)
+        if not invitation:
+            raise NotFound("Invalid or expired invitation")
+        if invitation.expires_at < datetime.now(timezone.utc):
+            raise Unauthorized("Invitation expired")
+
+        user = await self.users.get_by_id(user_id)
+        if not user:
+            raise NotFound("User not found")
+
+        # Verify the invitation email matches (or allow any logged-in user)
+        # For flexibility, allow any authenticated user to accept
+        existing = await self.memberships.get(user.id, invitation.org_id)
+        if not existing:
+            await self.memberships.create(
+                user_id=user.id,
+                org_id=invitation.org_id,
+                role=invitation.role,
+            )
+
+        invitation.accepted_at = datetime.now(timezone.utc)
+        await self.db.flush()
+
+        return {"user": user, "org_id": invitation.org_id, "role": invitation.role}

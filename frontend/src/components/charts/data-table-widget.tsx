@@ -14,6 +14,21 @@ interface DataTableWidgetProps {
   data: TableData;
 }
 
+function formatColumnHeader(column: string): string {
+  const name = column.includes(".")
+    ? column.split(".").pop() ?? column
+    : column;
+  return name
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+function formatCellValue(value: unknown): string {
+  if (value == null || value === "") return "-";
+  if (typeof value === "number") return value.toLocaleString();
+  return String(value);
+}
+
 export function DataTableWidget({ data }: DataTableWidgetProps) {
   if (data.columns.length === 0) {
     return (
@@ -27,9 +42,14 @@ export function DataTableWidget({ data }: DataTableWidgetProps) {
     <div className="h-full overflow-auto">
       <Table>
         <TableHeader>
-          <TableRow>
+          <TableRow className="border-b border-border/50">
             {data.columns.map((column) => (
-              <TableHead key={column}>{column}</TableHead>
+              <TableHead
+                key={column}
+                className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+              >
+                {formatColumnHeader(column)}
+              </TableHead>
             ))}
           </TableRow>
         </TableHeader>
@@ -45,10 +65,10 @@ export function DataTableWidget({ data }: DataTableWidgetProps) {
             </TableRow>
           ) : (
             data.rows.map((row, rowIndex) => (
-              <TableRow key={rowIndex}>
+              <TableRow key={rowIndex} className="border-b border-border/30">
                 {data.columns.map((column) => (
-                  <TableCell key={column}>
-                    {String(row[column] ?? "")}
+                  <TableCell key={column} className="py-2 text-sm">
+                    {formatCellValue(row[column])}
                   </TableCell>
                 ))}
               </TableRow>

@@ -61,11 +61,18 @@ export default function SharedDashboardPage({
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {dashboard.widgets.map((widget) => (
-          <WidgetRenderer
+          <div
             key={widget.id}
-            widget={widget}
-            dashboardId={dashboard.id}
-          />
+            style={{
+              minHeight: widget.widget_type === "kpi" ? "180px" : "320px",
+            }}
+          >
+            <WidgetRenderer
+              widget={widget}
+              dashboardId={dashboard.id}
+              shareToken={shareToken}
+            />
+          </div>
         ))}
       </div>
 

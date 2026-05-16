@@ -27,7 +27,7 @@ from app.models.alert import AlertRule
 from app.utils.security import generate_api_key
 
 engine = create_engine(
-    settings.database_url_sync,
+    settings.sync_database_url,
     pool_size=5,
     pool_pre_ping=True,
 )

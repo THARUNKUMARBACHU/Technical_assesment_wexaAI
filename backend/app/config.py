@@ -22,6 +22,24 @@ class Settings(BaseSettings):
     database_url: str
     database_url_sync: str = ""
 
+    @property
+    def async_database_url(self) -> str:
+        """Return asyncpg URL, converting from postgresql:// if needed."""
+        url = self.database_url
+        if url.startswith("postgresql://"):
+            url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
+        return url
+
+    @property
+    def sync_database_url(self) -> str:
+        """Return sync URL for scripts/alembic."""
+        if self.database_url_sync:
+            return self.database_url_sync
+        url = self.database_url
+        if "+asyncpg" in url:
+            url = url.replace("postgresql+asyncpg://", "postgresql://", 1)
+        return url
+
     # Redis
     redis_url: str = "redis://localhost:6379/0"
 
@@ -41,12 +59,15 @@ class Settings(BaseSettings):
     # Rate limiting
     rate_limit_per_minute: int = 60
 
-    # SMTP
-    smtp_host: str = ""
+    # SMTP (Gmail)
+    smtp_host: str = "smtp.gmail.com"
     smtp_port: int = 587
     smtp_user: str = ""
     smtp_password: str = ""
-    smtp_from_email: str = "noreply@analytics-platform.com"
+    smtp_sender_name: str = "LoopBoard Analytics"
+
+    # Frontend URL (for invite links)
+    frontend_url: str = "http://localhost:3000"
 
 
 settings = Settings()

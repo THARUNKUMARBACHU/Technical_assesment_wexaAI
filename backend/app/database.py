@@ -5,12 +5,12 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 from app.config import settings
 
 engine = create_async_engine(
-    settings.database_url,
+    settings.async_database_url,
     echo=settings.debug,
     pool_size=10,
     max_overflow=20,
     pool_pre_ping=True,
-    connect_args={"ssl": "require"} if "aivencloud" in settings.database_url else {},
+    connect_args={"ssl": "require"} if "aivencloud" in settings.async_database_url else {},
 )
 
 AsyncSessionLocal = async_sessionmaker(

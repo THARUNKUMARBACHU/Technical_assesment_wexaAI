@@ -44,6 +44,7 @@ import {
   useMuteAlertRule,
   useUnmuteAlertRule,
 } from "@/hooks/use-alerts";
+import { useRole } from "@/hooks/use-role";
 import type { AlertRule, AlertOperator } from "@/types/api";
 
 const SEVERITY_STYLES: Record<string, string> = {
@@ -233,6 +234,7 @@ function RuleActions({
 }
 
 export function AlertRulesTable() {
+  const { canEdit } = useRole();
   const { data: rules, isLoading } = useAlertRules();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingRule, setEditingRule] = useState<AlertRule | null>(null);
@@ -269,10 +271,12 @@ export function AlertRulesTable() {
         <p className="text-sm text-muted-foreground">
           {rules?.length ?? 0} alert rule{(rules?.length ?? 0) !== 1 ? "s" : ""}
         </p>
-        <Button onClick={handleCreate} size="sm">
-          <Plus className="size-4" />
-          Create Alert Rule
-        </Button>
+        {canEdit && (
+          <Button onClick={handleCreate} size="sm">
+            <Plus className="size-4" />
+            Create Alert Rule
+          </Button>
+        )}
       </div>
 
       {rules && rules.length > 0 ? (
@@ -285,7 +289,7 @@ export function AlertRulesTable() {
                 <TableHead>Condition</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Last Triggered</TableHead>
-                <TableHead className="w-[50px]">Actions</TableHead>
+                {canEdit && <TableHead className="w-[50px]">Actions</TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -328,9 +332,11 @@ export function AlertRulesTable() {
                         })
                       : "Never"}
                   </TableCell>
-                  <TableCell>
-                    <RuleActions rule={rule} onEdit={handleEdit} />
-                  </TableCell>
+                  {canEdit && (
+                    <TableCell>
+                      <RuleActions rule={rule} onEdit={handleEdit} />
+                    </TableCell>
+                  )}
                 </TableRow>
               ))}
             </TableBody>
@@ -343,10 +349,12 @@ export function AlertRulesTable() {
           <p className="mt-1 text-sm text-muted-foreground">
             Create your first alert rule to get started.
           </p>
-          <Button onClick={handleCreate} size="sm" className="mt-4">
-            <Plus className="size-4" />
-            Create Alert Rule
-          </Button>
+          {canEdit && (
+            <Button onClick={handleCreate} size="sm" className="mt-4">
+              <Plus className="size-4" />
+              Create Alert Rule
+            </Button>
+          )}
         </div>
       )}
 

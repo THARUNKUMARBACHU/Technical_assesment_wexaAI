@@ -26,7 +26,7 @@ from app.utils.security import generate_api_key
 # ---------------------------------------------------------------------------
 # Database setup
 # ---------------------------------------------------------------------------
-engine = create_engine(settings.database_url_sync)
+engine = create_engine(settings.sync_database_url)
 Session = sessionmaker(bind=engine)
 
 # ---------------------------------------------------------------------------

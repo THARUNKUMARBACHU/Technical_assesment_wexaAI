@@ -48,6 +48,7 @@ import {
   TrashIcon,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { useRole } from "@/hooks/use-role";
 import type { DashboardSummary } from "@/types/api";
 
 export default function DashboardsPage() {
@@ -58,6 +59,7 @@ export default function DashboardsPage() {
   const [createDescription, setCreateDescription] = useState("");
 
   const router = useRouter();
+  const { canEdit } = useRole();
   const { data: dashboards, isLoading } = useDashboards(filter);
   const createDashboard = useCreateDashboard();
   const deleteDashboard = useDeleteDashboard();
@@ -103,62 +105,64 @@ export default function DashboardsPage() {
             Create and manage your analytics dashboards.
           </p>
         </div>
-        <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-          <DialogTrigger
-            render={
-              <Button>
-                <PlusIcon className="size-4" data-icon="inline-start" />
-                Create Dashboard
-              </Button>
-            }
-          />
-          <DialogContent className="sm:max-w-md">
-            <form onSubmit={handleCreate}>
-              <DialogHeader>
-                <DialogTitle>Create Dashboard</DialogTitle>
-                <DialogDescription>
-                  Add a new dashboard to organize your widgets and analytics.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="mt-4 grid gap-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="dash-title">Title</Label>
-                  <Input
-                    id="dash-title"
-                    placeholder="e.g., Marketing Overview"
-                    value={createTitle}
-                    onChange={(e) => setCreateTitle(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="dash-desc">Description</Label>
-                  <Input
-                    id="dash-desc"
-                    placeholder="Optional description..."
-                    value={createDescription}
-                    onChange={(e) => setCreateDescription(e.target.value)}
-                  />
-                </div>
-              </div>
-              <DialogFooter className="mt-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setCreateOpen(false)}
-                >
-                  Cancel
+        {canEdit && (
+          <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+            <DialogTrigger
+              render={
+                <Button>
+                  <PlusIcon className="size-4" data-icon="inline-start" />
+                  Create Dashboard
                 </Button>
-                <Button
-                  type="submit"
-                  disabled={createDashboard.isPending || !createTitle.trim()}
-                >
-                  {createDashboard.isPending ? "Creating..." : "Create"}
-                </Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
+              }
+            />
+            <DialogContent className="sm:max-w-md">
+              <form onSubmit={handleCreate}>
+                <DialogHeader>
+                  <DialogTitle>Create Dashboard</DialogTitle>
+                  <DialogDescription>
+                    Add a new dashboard to organize your widgets and analytics.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="mt-4 grid gap-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="dash-title">Title</Label>
+                    <Input
+                      id="dash-title"
+                      placeholder="e.g., Marketing Overview"
+                      value={createTitle}
+                      onChange={(e) => setCreateTitle(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="dash-desc">Description</Label>
+                    <Input
+                      id="dash-desc"
+                      placeholder="Optional description..."
+                      value={createDescription}
+                      onChange={(e) => setCreateDescription(e.target.value)}
+                    />
+                  </div>
+                </div>
+                <DialogFooter className="mt-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setCreateOpen(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={createDashboard.isPending || !createTitle.trim()}
+                  >
+                    {createDashboard.isPending ? "Creating..." : "Create"}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
+        )}
       </div>
 
       <Tabs
@@ -281,6 +285,7 @@ function DashboardCard({
   onDelete: (id: string) => void;
 }) {
   const router = useRouter();
+  const { canEdit } = useRole();
   const duplicate = useDuplicateDashboard(dashboard.id);
 
   return (
@@ -298,42 +303,44 @@ function DashboardCard({
               </CardDescription>
             )}
           </div>
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className="ml-2 shrink-0"
-          >
-            <DropdownMenu>
-              <DropdownMenuTrigger
-                render={
-                  <Button variant="ghost" size="icon-sm">
-                    <MoreVerticalIcon className="size-4" />
-                  </Button>
-                }
-              />
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem
-                  onClick={() => router.push(`/dashboards/${dashboard.id}`)}
-                >
-                  <PencilIcon className="size-4" />
-                  Edit
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => duplicate.mutate()}
-                >
-                  <CopyIcon className="size-4" />
-                  Duplicate
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  variant="destructive"
-                  onClick={() => onDelete(dashboard.id)}
-                >
-                  <TrashIcon className="size-4" />
-                  Delete
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+          {canEdit && (
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="ml-2 shrink-0"
+            >
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  render={
+                    <Button variant="ghost" size="icon-sm">
+                      <MoreVerticalIcon className="size-4" />
+                    </Button>
+                  }
+                />
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem
+                    onClick={() => router.push(`/dashboards/${dashboard.id}`)}
+                  >
+                    <PencilIcon className="size-4" />
+                    Edit
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => duplicate.mutate()}
+                  >
+                    <CopyIcon className="size-4" />
+                    Duplicate
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    variant="destructive"
+                    onClick={() => onDelete(dashboard.id)}
+                  >
+                    <TrashIcon className="size-4" />
+                    Delete
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          )}
         </div>
       </CardHeader>
       <CardContent>
@@ -350,7 +357,7 @@ function DashboardCard({
         <div className="flex w-full items-center justify-between text-xs text-muted-foreground">
           <span>{dashboard.created_by.full_name}</span>
           <span>
-            {formatDistanceToNow(new Date(dashboard.updated_at), {
+            {formatDistanceToNow(new Date(dashboard.updated_at || dashboard.created_at), {
               addSuffix: true,
             })}
           </span>

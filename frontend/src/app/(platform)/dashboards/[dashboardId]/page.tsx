@@ -49,6 +49,7 @@ import {
   CheckIcon,
   LayoutDashboardIcon,
 } from "lucide-react";
+import { useRole } from "@/hooks/use-role";
 
 const TIME_RANGES = [
   { value: "1h", label: "Last 1 hour" },
@@ -66,6 +67,7 @@ export default function DashboardDetailPage({
   const { dashboardId } = use(params);
   const router = useRouter();
 
+  const { canEdit } = useRole();
   const { data: dashboard, isLoading, isError } = useDashboard(dashboardId);
   const updateDashboard = useUpdateDashboard(dashboardId);
   const deleteWidget = useDeleteWidget(dashboardId);
@@ -157,7 +159,7 @@ export default function DashboardDetailPage({
           <ArrowLeftIcon className="size-4" />
         </Button>
 
-        {editingTitle ? (
+        {canEdit && editingTitle ? (
           <form
             className="flex items-center gap-2"
             onSubmit={(e) => {
@@ -175,8 +177,8 @@ export default function DashboardDetailPage({
           </form>
         ) : (
           <h1
-            className="cursor-pointer text-xl font-bold tracking-tight hover:text-foreground/80"
-            onClick={() => setEditingTitle(true)}
+            className={`text-xl font-bold tracking-tight${canEdit ? " cursor-pointer hover:text-foreground/80" : ""}`}
+            onClick={canEdit ? () => setEditingTitle(true) : undefined}
           >
             {dashboard.title}
           </h1>
@@ -187,17 +189,19 @@ export default function DashboardDetailPage({
         )}
 
         <div className="ml-auto flex items-center gap-3">
-          <div className="flex items-center gap-2">
-            <Label htmlFor="auto-refresh" className="text-xs text-muted-foreground">
-              Auto-refresh
-            </Label>
-            <Switch
-              id="auto-refresh"
-              size="sm"
-              checked={autoRefresh}
-              onCheckedChange={handleAutoRefreshToggle}
-            />
-          </div>
+          {canEdit && (
+            <div className="flex items-center gap-2">
+              <Label htmlFor="auto-refresh" className="text-xs text-muted-foreground">
+                Auto-refresh
+              </Label>
+              <Switch
+                id="auto-refresh"
+                size="sm"
+                checked={autoRefresh}
+                onCheckedChange={handleAutoRefreshToggle}
+              />
+            </div>
+          )}
 
           <Select value={timeRange} onValueChange={(v) => v && setTimeRange(v)}>
             <SelectTrigger className="w-40">
@@ -212,12 +216,14 @@ export default function DashboardDetailPage({
             </SelectContent>
           </Select>
 
-          <WidgetAddDialog
-            dashboardId={dashboardId}
-            existingWidgetCount={dashboard.widgets.length}
-          />
+          {canEdit && (
+            <WidgetAddDialog
+              dashboardId={dashboardId}
+              existingWidgetCount={dashboard.widgets.length}
+            />
+          )}
 
-          <Dialog open={shareOpen} onOpenChange={setShareOpen}>
+          {canEdit && <Dialog open={shareOpen} onOpenChange={setShareOpen}>
             <DialogTrigger
               render={
                 <Button variant="outline" size="sm">
@@ -267,7 +273,7 @@ export default function DashboardDetailPage({
               </div>
               <DialogFooter className="mt-4" showCloseButton />
             </DialogContent>
-          </Dialog>
+          </Dialog>}
         </div>
       </div>
 
@@ -283,10 +289,12 @@ export default function DashboardDetailPage({
               Add your first widget to start visualizing data on this dashboard.
             </p>
           </div>
-          <WidgetAddDialog
-            dashboardId={dashboardId}
-            existingWidgetCount={0}
-          />
+          {canEdit && (
+            <WidgetAddDialog
+              dashboardId={dashboardId}
+              existingWidgetCount={0}
+            />
+          )}
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -299,26 +307,28 @@ export default function DashboardDetailPage({
                   widget.widget_type === "kpi" ? "180px" : "320px",
               }}
             >
-              <div className="absolute right-2 top-2 z-10">
-                <DropdownMenu>
-                  <DropdownMenuTrigger
-                    render={
-                      <Button variant="ghost" size="icon-xs">
-                        <MoreVerticalIcon className="size-3.5" />
-                      </Button>
-                    }
-                  />
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem
-                      variant="destructive"
-                      onClick={() => handleDeleteWidget(widget.id)}
-                    >
-                      <TrashIcon className="size-4" />
-                      Delete Widget
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
+              {canEdit && (
+                <div className="absolute right-2 top-2 z-10">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger
+                      render={
+                        <Button variant="ghost" size="icon-xs">
+                          <MoreVerticalIcon className="size-3.5" />
+                        </Button>
+                      }
+                    />
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem
+                        variant="destructive"
+                        onClick={() => handleDeleteWidget(widget.id)}
+                      >
+                        <TrashIcon className="size-4" />
+                        Delete Widget
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              )}
               <WidgetRenderer
                 widget={widget}
                 dashboardId={dashboardId}

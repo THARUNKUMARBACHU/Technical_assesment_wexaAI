@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { api } from "@/lib/api-client";
+import { api, apiClient } from "@/lib/api-client";
 import { queryKeys } from "@/lib/query-keys";
 import type {
   CreateDashboardRequest,
@@ -133,17 +133,25 @@ export function useUpdateLayout(dashboardId: string) {
 export function useWidgetData(
   dashboardId: string,
   widgetId: string,
-  timeRange?: string
+  timeRange?: string,
+  shareToken?: string,
 ) {
   return useQuery({
-    queryKey: queryKeys.widgets.data(dashboardId, widgetId, timeRange),
+    queryKey: shareToken
+      ? ["shared-widget", shareToken, widgetId, timeRange]
+      : queryKeys.widgets.data(dashboardId, widgetId, timeRange),
     queryFn: () =>
-      api.get<WidgetDataResponse>(
-        `/dashboards/${dashboardId}/widgets/${widgetId}/data`,
-        { time_range: timeRange }
-      ),
-    enabled: !!dashboardId && !!widgetId,
-    refetchInterval: undefined, // controlled by auto-refresh at dashboard level
+      shareToken
+        ? apiClient<WidgetDataResponse>(
+            `/shared/${shareToken}/widgets/${widgetId}/data`,
+            { skipAuth: true, params: timeRange ? { time_range: timeRange } : undefined }
+          )
+        : api.get<WidgetDataResponse>(
+            `/dashboards/${dashboardId}/widgets/${widgetId}/data`,
+            { time_range: timeRange }
+          ),
+    enabled: !!widgetId && (!!shareToken || !!dashboardId),
+    refetchInterval: undefined,
   });
 }
 

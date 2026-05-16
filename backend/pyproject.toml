@@ -38,6 +38,9 @@ dependencies = [
 
     # HTTP client (webhooks, testing)
     "httpx>=0.28.0",
+
+    # Env loading
+    "python-dotenv>=1.0.0",
 ]
 
 [project.optional-dependencies]

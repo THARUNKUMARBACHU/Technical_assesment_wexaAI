@@ -148,6 +148,22 @@ async def create_invitation(
 ):
     svc = InviteService(db)
     inv = await svc.create_invitation(org_id, body.email, body.role, user.id)
+
+    # Send invitation email
+    from app.repositories.auth import OrgRepo
+    from app.services.email import send_invite_email
+    org = await OrgRepo(db).get_by_id(org_id)
+    org_name = org.name if org else "your organization"
+    raw_token = getattr(inv, "_raw_token", None)
+    if raw_token:
+        send_invite_email(
+            to_email=body.email,
+            org_name=org_name,
+            role=body.role,
+            invite_token=raw_token,
+            inviter_name=user.full_name,
+        )
+
     return InvitationOut.model_validate(inv)
 
 

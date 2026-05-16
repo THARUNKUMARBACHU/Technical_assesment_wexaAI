@@ -22,17 +22,20 @@ interface WidgetRendererProps {
   widget: Widget;
   dashboardId: string;
   timeRange?: string;
+  shareToken?: string;
 }
 
 export function WidgetRenderer({
   widget,
   dashboardId,
   timeRange,
+  shareToken,
 }: WidgetRendererProps) {
   const { data, isLoading, isError, error } = useWidgetData(
     dashboardId,
     widget.id,
-    timeRange
+    timeRange,
+    shareToken,
   );
 
   return (

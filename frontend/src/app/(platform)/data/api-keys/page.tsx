@@ -5,6 +5,7 @@ import { Copy, Key, Plus, Trash2, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 
 import { useApiKeys, useCreateApiKey, useDeleteApiKey } from "@/hooks/use-data";
+import { useRole } from "@/hooks/use-role";
 import type { ApiKeyScope, ApiKeyWithSecret } from "@/types/api";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -52,6 +53,7 @@ function maskKey(prefix: string): string {
 }
 
 export default function ApiKeysPage() {
+  const { isManager } = useRole();
   const { data: keys, isLoading } = useApiKeys();
   const createApiKey = useCreateApiKey();
   const deleteApiKey = useDeleteApiKey();
@@ -139,7 +141,7 @@ export default function ApiKeysPage() {
             Manage API keys for event ingestion
           </p>
         </div>
-        <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+        {isManager && <Dialog open={createOpen} onOpenChange={setCreateOpen}>
           <DialogTrigger
             render={
               <Button>
@@ -225,7 +227,7 @@ export default function ApiKeysPage() {
               </Button>
             </DialogFooter>
           </DialogContent>
-        </Dialog>
+        </Dialog>}
       </div>
 
       {/* Secret key dialog - shown after creation */}
@@ -341,7 +343,7 @@ export default function ApiKeysPage() {
                   <TableHead>Last Used</TableHead>
                   <TableHead>Expires</TableHead>
                   <TableHead>Created</TableHead>
-                  <TableHead className="w-16">Actions</TableHead>
+                  {isManager && <TableHead className="w-16">Actions</TableHead>}
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -371,21 +373,23 @@ export default function ApiKeysPage() {
                     <TableCell className="text-muted-foreground">
                       {formatDate(key.created_at)}
                     </TableCell>
-                    <TableCell>
-                      <Button
-                        variant="ghost"
-                        size="icon-sm"
-                        onClick={() => {
-                          setDeleteTarget({
-                            id: key.id,
-                            name: key.name,
-                          });
-                          setDeleteOpen(true);
-                        }}
-                      >
-                        <Trash2 className="size-4 text-destructive" />
-                      </Button>
-                    </TableCell>
+                    {isManager && (
+                      <TableCell>
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          onClick={() => {
+                            setDeleteTarget({
+                              id: key.id,
+                              name: key.name,
+                            });
+                            setDeleteOpen(true);
+                          }}
+                        >
+                          <Trash2 className="size-4 text-destructive" />
+                        </Button>
+                      </TableCell>
+                    )}
                   </TableRow>
                 ))}
               </TableBody>

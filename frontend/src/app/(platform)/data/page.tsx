@@ -11,8 +11,8 @@ import {
   ArrowRight,
 } from "lucide-react";
 
-import { useEventStats } from "@/hooks/use-data";
-import { useCsvUploads } from "@/hooks/use-data";
+import { useEventStats, useCsvUploads } from "@/hooks/use-data";
+import { useRole } from "@/hooks/use-role";
 import {
   Card,
   CardContent,
@@ -82,6 +82,7 @@ function StatsLoadingSkeleton() {
 
 export default function DataOverviewPage() {
   const router = useRouter();
+  const { isManager, canEdit } = useRole();
   const { data: stats, isLoading: statsLoading } = useEventStats();
   const { data: uploads, isLoading: uploadsLoading } = useCsvUploads();
 
@@ -213,28 +214,32 @@ export default function DataOverviewPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
-            <Button
-              variant="outline"
-              className="w-full justify-between"
-              onClick={() => router.push("/data/api-keys")}
-            >
-              <span className="flex items-center gap-2">
-                <Key className="size-4" />
-                Manage API Keys
-              </span>
-              <ArrowRight className="size-4" />
-            </Button>
-            <Button
-              variant="outline"
-              className="w-full justify-between"
-              onClick={() => router.push("/data/upload")}
-            >
-              <span className="flex items-center gap-2">
-                <Upload className="size-4" />
-                Upload CSV
-              </span>
-              <ArrowRight className="size-4" />
-            </Button>
+            {isManager && (
+              <Button
+                variant="outline"
+                className="w-full justify-between"
+                onClick={() => router.push("/data/api-keys")}
+              >
+                <span className="flex items-center gap-2">
+                  <Key className="size-4" />
+                  Manage API Keys
+                </span>
+                <ArrowRight className="size-4" />
+              </Button>
+            )}
+            {canEdit && (
+              <Button
+                variant="outline"
+                className="w-full justify-between"
+                onClick={() => router.push("/data/upload")}
+              >
+                <span className="flex items-center gap-2">
+                  <Upload className="size-4" />
+                  Upload CSV
+                </span>
+                <ArrowRight className="size-4" />
+              </Button>
+            )}
             <Button
               variant="outline"
               className="w-full justify-between"
