@@ -1,0 +1,1569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Analytics Platform - UI Prototype</title>
+<style>
+  /* ===== RESET & BASE ===== */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f172a; color: #0f172a; font-size: 14px; line-height: 1.5; }
+  a { color: #2563eb; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  button { cursor: pointer; font-family: inherit; font-size: 14px; border: none; }
+  input, select, textarea { font-family: inherit; font-size: 14px; }
+
+  /* ===== COLOR TOKENS ===== */
+  :root {
+    --sidebar-bg: #0f172a;
+    --sidebar-hover: #1e293b;
+    --sidebar-text: #94a3b8;
+    --sidebar-active: #ffffff;
+    --content-bg: #f8fafc;
+    --card-bg: #ffffff;
+    --border: #e2e8f0;
+    --text-primary: #0f172a;
+    --text-secondary: #64748b;
+    --text-muted: #94a3b8;
+    --primary: #2563eb;
+    --primary-hover: #1d4ed8;
+    --success: #16a34a;
+    --warning: #f59e0b;
+    --error: #dc2626;
+    --info: #0ea5e9;
+    --radius: 8px;
+  }
+
+  /* ===== SCREEN SWITCHER (prototype navigation) ===== */
+  .proto-nav { position: fixed; top: 0; left: 0; right: 0; background: #1e1e2e; padding: 8px 16px; display: flex; gap: 4px; z-index: 9999; overflow-x: auto; border-bottom: 2px solid #2563eb; }
+  .proto-nav button { padding: 6px 14px; border-radius: 6px; font-size: 12px; font-weight: 500; color: #94a3b8; background: transparent; white-space: nowrap; transition: all 0.15s; }
+  .proto-nav button:hover { background: #334155; color: #e2e8f0; }
+  .proto-nav button.active { background: #2563eb; color: white; }
+  .screen { display: none; margin-top: 44px; min-height: calc(100vh - 44px); }
+  .screen.active { display: block; }
+
+  /* ===== AUTH SCREENS ===== */
+  .auth-wrapper { min-height: calc(100vh - 44px); display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding: 20px; }
+  .auth-card { background: var(--card-bg); border-radius: 12px; padding: 40px; width: 100%; max-width: 420px; box-shadow: 0 25px 50px rgba(0,0,0,0.3); }
+  .auth-logo { text-align: center; margin-bottom: 32px; }
+  .auth-logo .logo-icon { width: 48px; height: 48px; background: var(--primary); border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 20px; margin-bottom: 12px; }
+  .auth-logo h1 { font-size: 20px; font-weight: 700; color: var(--text-primary); }
+  .auth-logo p { color: var(--text-secondary); font-size: 14px; margin-top: 4px; }
+  .form-group { margin-bottom: 16px; }
+  .form-group label { display: block; font-weight: 500; color: var(--text-primary); margin-bottom: 6px; font-size: 13px; }
+  .form-input { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius); font-size: 14px; transition: border-color 0.15s; background: white; }
+  .form-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+  .form-hint { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; padding: 10px 16px; border-radius: var(--radius); font-weight: 500; transition: all 0.15s; gap: 8px; }
+  .btn-primary { background: var(--primary); color: white; width: 100%; }
+  .btn-primary:hover { background: var(--primary-hover); }
+  .btn-outline { background: white; color: var(--text-primary); border: 1px solid var(--border); width: 100%; }
+  .btn-outline:hover { background: var(--content-bg); }
+  .btn-sm { padding: 6px 12px; font-size: 13px; }
+  .btn-ghost { background: transparent; color: var(--text-secondary); padding: 6px 12px; }
+  .btn-ghost:hover { background: var(--content-bg); color: var(--text-primary); }
+  .btn-danger { background: var(--error); color: white; }
+  .btn-success { background: var(--success); color: white; }
+  .divider { display: flex; align-items: center; gap: 12px; margin: 20px 0; color: var(--text-muted); font-size: 13px; }
+  .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .auth-footer { text-align: center; margin-top: 20px; color: var(--text-secondary); font-size: 13px; }
+  .forgot-link { display: block; text-align: right; font-size: 13px; margin-top: -8px; margin-bottom: 16px; }
+
+  /* ===== PLATFORM SHELL ===== */
+  .platform { display: flex; min-height: calc(100vh - 44px); }
+  .sidebar { width: 240px; background: var(--sidebar-bg); display: flex; flex-direction: column; flex-shrink: 0; border-right: 1px solid #1e293b; }
+  .sidebar-header { padding: 16px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #1e293b; }
+  .sidebar-header .logo { width: 32px; height: 32px; background: var(--primary); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 14px; }
+  .sidebar-header span { color: white; font-weight: 600; font-size: 15px; }
+  .sidebar-nav { flex: 1; padding: 8px; }
+  .nav-section { margin-bottom: 4px; }
+  .nav-section-label { padding: 8px 12px 4px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: #475569; font-weight: 600; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 6px; color: var(--sidebar-text); font-size: 14px; transition: all 0.1s; cursor: pointer; margin-bottom: 2px; }
+  .nav-item:hover { background: var(--sidebar-hover); color: #cbd5e1; }
+  .nav-item.active { background: #1e293b; color: var(--sidebar-active); font-weight: 500; }
+  .nav-item .icon { width: 20px; text-align: center; font-size: 16px; flex-shrink: 0; }
+  .nav-item .badge { margin-left: auto; background: var(--error); color: white; font-size: 11px; padding: 1px 6px; border-radius: 10px; font-weight: 600; }
+  .nav-sub { padding-left: 42px; }
+  .nav-sub .nav-item { padding: 6px 12px; font-size: 13px; }
+  .sidebar-footer { padding: 12px; border-top: 1px solid #1e293b; }
+  .org-switcher { display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: 6px; cursor: pointer; transition: background 0.1s; }
+  .org-switcher:hover { background: var(--sidebar-hover); }
+  .org-avatar { width: 32px; height: 32px; background: #334155; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #94a3b8; font-weight: 600; font-size: 13px; }
+  .org-info { flex: 1; min-width: 0; }
+  .org-info .org-name { color: #e2e8f0; font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .org-info .org-role { color: #64748b; font-size: 11px; }
+  .org-switcher .chevron { color: #64748b; font-size: 12px; }
+
+  /* ===== MAIN CONTENT ===== */
+  .main { flex: 1; display: flex; flex-direction: column; background: var(--content-bg); overflow-x: hidden; }
+  .topbar { display: flex; align-items: center; padding: 12px 24px; background: var(--card-bg); border-bottom: 1px solid var(--border); gap: 16px; flex-shrink: 0; }
+  .breadcrumbs { font-size: 14px; color: var(--text-secondary); display: flex; align-items: center; gap: 6px; }
+  .breadcrumbs .current { color: var(--text-primary); font-weight: 500; }
+  .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .search-box { display: flex; align-items: center; gap: 6px; padding: 6px 12px; background: var(--content-bg); border: 1px solid var(--border); border-radius: 6px; color: var(--text-muted); font-size: 13px; cursor: pointer; }
+  .search-box:hover { border-color: #cbd5e1; }
+  .search-box kbd { background: white; border: 1px solid var(--border); padding: 1px 5px; border-radius: 4px; font-size: 11px; }
+  .icon-btn { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 6px; color: var(--text-secondary); background: transparent; position: relative; }
+  .icon-btn:hover { background: var(--content-bg); }
+  .icon-btn .notif-badge { position: absolute; top: 4px; right: 4px; width: 16px; height: 16px; background: var(--error); color: white; font-size: 10px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; }
+  .user-btn { display: flex; align-items: center; gap: 8px; padding: 4px 8px; border-radius: 6px; background: transparent; }
+  .user-btn:hover { background: var(--content-bg); }
+  .user-avatar { width: 32px; height: 32px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 13px; }
+  .content { flex: 1; padding: 24px; overflow-y: auto; }
+
+  /* ===== PAGE HEADERS ===== */
+  .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+  .page-header h1 { font-size: 24px; font-weight: 700; color: var(--text-primary); }
+  .page-header-actions { display: flex; gap: 8px; }
+
+  /* ===== TABS ===== */
+  .tabs { display: flex; gap: 2px; margin-bottom: 20px; border-bottom: 1px solid var(--border); }
+  .tab { padding: 8px 16px; font-size: 13px; font-weight: 500; color: var(--text-secondary); border-bottom: 2px solid transparent; cursor: pointer; background: none; transition: all 0.15s; }
+  .tab:hover { color: var(--text-primary); }
+  .tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+  /* ===== CARDS ===== */
+  .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); }
+  .card-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .card-header h3 { font-size: 15px; font-weight: 600; }
+  .card-body { padding: 20px; }
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+
+  /* ===== DASHBOARD CARDS ===== */
+  .dash-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; cursor: pointer; transition: all 0.15s; }
+  .dash-card:hover { border-color: var(--primary); box-shadow: 0 4px 12px rgba(0,0,0,0.05); transform: translateY(-1px); }
+  .dash-card h3 { font-size: 15px; font-weight: 600; margin-bottom: 12px; }
+  .dash-card-preview { height: 120px; background: var(--content-bg); border-radius: 6px; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+  .dash-card-meta { display: flex; justify-content: space-between; color: var(--text-secondary); font-size: 12px; }
+  .dash-card-template { border: 2px dashed var(--border); background: transparent; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 200px; color: var(--text-muted); }
+  .dash-card-template:hover { border-color: var(--primary); color: var(--primary); }
+
+  /* ===== DASHBOARD VIEW ===== */
+  .dashboard-toolbar { display: flex; align-items: center; gap: 12px; padding: 12px 0; margin-bottom: 16px; flex-wrap: wrap; }
+  .dashboard-toolbar .title { font-size: 20px; font-weight: 700; flex: 1; }
+  .time-selector { display: flex; gap: 2px; background: var(--content-bg); border: 1px solid var(--border); border-radius: 6px; padding: 2px; }
+  .time-selector button { padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 500; color: var(--text-secondary); background: none; }
+  .time-selector button.active { background: white; color: var(--text-primary); box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+  .widget-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 16px; }
+  .widget { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  .widget-header { padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); }
+  .widget-header h4 { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+  .widget-body { padding: 16px; }
+  .widget-6 { grid-column: span 6; }
+  .widget-12 { grid-column: span 12; }
+
+  /* ===== CHART PLACEHOLDERS ===== */
+  .chart-line { height: 180px; position: relative; overflow: hidden; }
+  .chart-line svg { width: 100%; height: 100%; }
+  .chart-bar { height: 180px; display: flex; align-items: flex-end; gap: 8px; padding: 0 8px; }
+  .chart-bar .bar { flex: 1; background: var(--primary); border-radius: 4px 4px 0 0; transition: opacity 0.15s; opacity: 0.8; }
+  .chart-bar .bar:hover { opacity: 1; }
+  .chart-pie { width: 160px; height: 160px; border-radius: 50%; margin: 0 auto; position: relative; }
+  .kpi-value { font-size: 36px; font-weight: 700; color: var(--text-primary); }
+  .kpi-change { font-size: 14px; font-weight: 500; margin-top: 4px; }
+  .kpi-change.up { color: var(--success); }
+  .kpi-change.down { color: var(--error); }
+  .kpi-label { font-size: 13px; color: var(--text-secondary); margin-top: 4px; }
+
+  /* ===== DATA TABLE ===== */
+  .data-table { width: 100%; border-collapse: collapse; }
+  .data-table th { text-align: left; padding: 10px 16px; font-size: 12px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; background: var(--content-bg); border-bottom: 1px solid var(--border); }
+  .data-table td { padding: 10px 16px; border-bottom: 1px solid var(--border); font-size: 13px; color: var(--text-primary); }
+  .data-table tr:hover td { background: #f1f5f9; }
+
+  /* ===== STATUS BADGES ===== */
+  .status { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+  .status-firing { background: #fef2f2; color: var(--error); }
+  .status-resolved { background: #f0fdf4; color: var(--success); }
+  .status-acked { background: #eff6ff; color: var(--primary); }
+  .status-muted { background: #f8fafc; color: var(--text-muted); }
+  .status-active { background: #f0fdf4; color: var(--success); }
+  .status-warning { background: #fffbeb; color: var(--warning); }
+  .status-critical { background: #fef2f2; color: var(--error); }
+  .status-info { background: #f0f9ff; color: var(--info); }
+
+  .severity-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+  .dot-critical { background: var(--error); }
+  .dot-warning { background: var(--warning); }
+  .dot-info { background: var(--info); }
+  .dot-success { background: var(--success); }
+
+  /* ===== ALERT CARDS ===== */
+  .alert-rule { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 20px; margin-bottom: 8px; display: flex; align-items: center; gap: 16px; transition: border-color 0.15s; }
+  .alert-rule:hover { border-color: #cbd5e1; }
+  .alert-rule .alert-info { flex: 1; }
+  .alert-rule .alert-name { font-weight: 600; font-size: 14px; margin-bottom: 2px; }
+  .alert-rule .alert-desc { color: var(--text-secondary); font-size: 13px; }
+  .alert-rule .alert-meta { color: var(--text-muted); font-size: 12px; margin-top: 4px; }
+  .alert-rule .alert-actions { display: flex; gap: 6px; align-items: center; }
+
+  /* ===== TOGGLE SWITCH ===== */
+  .toggle { width: 40px; height: 22px; background: #cbd5e1; border-radius: 11px; position: relative; cursor: pointer; transition: background 0.2s; }
+  .toggle.on { background: var(--success); }
+  .toggle::after { content: ''; position: absolute; width: 18px; height: 18px; background: white; border-radius: 50%; top: 2px; left: 2px; transition: transform 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+  .toggle.on::after { transform: translateX(18px); }
+
+  /* ===== DATA SOURCES ===== */
+  .source-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 24px; }
+  .source-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
+  .source-card h3 { font-size: 15px; font-weight: 600; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+  .source-card .stat { font-size: 24px; font-weight: 700; color: var(--text-primary); }
+  .source-card .stat-label { font-size: 13px; color: var(--text-secondary); margin-top: 2px; }
+  .source-card .link { display: inline-block; margin-top: 12px; font-size: 13px; font-weight: 500; }
+
+  /* ===== LIVE STREAM ===== */
+  .stream-event { padding: 10px 16px; border-bottom: 1px solid var(--border); font-family: 'SF Mono', 'Fira Code', monospace; font-size: 12px; transition: background 0.15s; }
+  .stream-event:hover { background: #f1f5f9; }
+  .stream-time { color: var(--text-muted); margin-right: 12px; }
+  .stream-type { font-weight: 600; margin-right: 8px; padding: 2px 8px; border-radius: 4px; font-size: 11px; }
+  .stream-type.purchase { background: #dbeafe; color: #1e40af; }
+  .stream-type.page_view { background: #f3e8ff; color: #6b21a8; }
+  .stream-type.error { background: #fef2f2; color: #991b1b; }
+  .stream-type.signup { background: #dcfce7; color: #166534; }
+  .stream-actor { color: var(--text-secondary); margin-right: 8px; }
+  .stream-props { color: var(--text-muted); }
+  .connection-status { display: flex; align-items: center; gap: 6px; font-size: 13px; }
+  .connection-dot { width: 8px; height: 8px; border-radius: 50%; animation: pulse 2s infinite; }
+  .connection-dot.connected { background: var(--success); }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+  /* ===== FORMS ===== */
+  .form-section { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin-bottom: 16px; }
+  .form-section h3 { font-size: 15px; font-weight: 600; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+  .form-row { display: flex; gap: 12px; margin-bottom: 16px; }
+  .form-row > * { flex: 1; }
+  .form-select { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius); background: white; }
+  .form-select:focus { outline: none; border-color: var(--primary); }
+  .checkbox-group { display: flex; gap: 16px; }
+  .checkbox-item { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+  .checkbox { width: 18px; height: 18px; border: 2px solid var(--border); border-radius: 4px; display: flex; align-items: center; justify-content: center; }
+  .checkbox.checked { background: var(--primary); border-color: var(--primary); color: white; font-size: 12px; }
+  .tag { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; background: #eff6ff; color: var(--primary); border-radius: 6px; font-size: 12px; font-weight: 500; margin-right: 6px; }
+  .tag .remove { cursor: pointer; opacity: 0.6; }
+  .tag .remove:hover { opacity: 1; }
+
+  /* ===== SETTINGS ===== */
+  .member-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .member-row:last-child { border-bottom: none; }
+  .member-avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px; color: white; }
+  .member-info { flex: 1; }
+  .member-info .name { font-weight: 500; font-size: 14px; }
+  .member-info .email { color: var(--text-secondary); font-size: 13px; }
+  .role-select { padding: 4px 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; background: white; }
+
+  /* ===== NOTIFICATION DROPDOWN ===== */
+  .notif-panel { position: absolute; top: 100%; right: 0; width: 360px; background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: 0 10px 40px rgba(0,0,0,0.1); z-index: 100; }
+  .notif-header { padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; font-weight: 600; font-size: 14px; }
+  .notif-item { padding: 12px 16px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.1s; }
+  .notif-item:hover { background: #f8fafc; }
+  .notif-item.unread { background: #f0f9ff; }
+  .notif-item .notif-title { font-weight: 500; font-size: 13px; margin-bottom: 2px; }
+  .notif-item .notif-desc { font-size: 12px; color: var(--text-secondary); }
+  .notif-item .notif-time { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+
+  /* ===== WIDGET CONFIG PANEL (Edit mode) ===== */
+  .edit-layout { display: flex; gap: 0; }
+  .edit-canvas { flex: 1; }
+  .config-panel { width: 320px; background: var(--card-bg); border-left: 1px solid var(--border); padding: 20px; flex-shrink: 0; }
+  .config-panel h3 { font-size: 15px; font-weight: 600; margin-bottom: 16px; }
+  .config-tabs { display: flex; gap: 2px; margin-bottom: 16px; border-bottom: 1px solid var(--border); }
+  .config-tab { padding: 6px 12px; font-size: 13px; font-weight: 500; color: var(--text-secondary); background: none; border-bottom: 2px solid transparent; cursor: pointer; }
+  .config-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+  /* ===== WIDGET TYPES DIALOG ===== */
+  .widget-types { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 16px 0; }
+  .widget-type { display: flex; flex-direction: column; align-items: center; padding: 16px; border: 2px solid var(--border); border-radius: var(--radius); cursor: pointer; transition: all 0.15s; text-align: center; }
+  .widget-type:hover { border-color: var(--primary); background: #eff6ff; }
+  .widget-type.selected { border-color: var(--primary); background: #eff6ff; }
+  .widget-type .wt-icon { font-size: 32px; margin-bottom: 8px; }
+  .widget-type .wt-label { font-size: 13px; font-weight: 500; }
+
+  /* ===== DIALOG/MODAL ===== */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+  .modal { background: var(--card-bg); border-radius: 12px; padding: 24px; max-width: 480px; width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
+  .modal h2 { font-size: 18px; font-weight: 600; margin-bottom: 16px; display: flex; justify-content: space-between; }
+  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; }
+
+  /* ===== CSV UPLOAD ===== */
+  .upload-zone { border: 2px dashed var(--border); border-radius: var(--radius); padding: 60px 40px; text-align: center; cursor: pointer; transition: all 0.15s; }
+  .upload-zone:hover { border-color: var(--primary); background: #eff6ff; }
+  .upload-icon { font-size: 48px; color: var(--text-muted); margin-bottom: 12px; }
+  .steps-bar { display: flex; gap: 0; margin-bottom: 24px; }
+  .step { flex: 1; text-align: center; padding: 8px; font-size: 13px; font-weight: 500; color: var(--text-muted); position: relative; }
+  .step.active { color: var(--primary); }
+  .step.done { color: var(--success); }
+  .step::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: var(--border); }
+  .step.active::after { background: var(--primary); }
+  .step.done::after { background: var(--success); }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 768px) {
+    .widget-grid { grid-template-columns: 1fr; }
+    .widget-6, .widget-12 { grid-column: span 1; }
+    .source-grid { grid-template-columns: 1fr; }
+    .sidebar { display: none; }
+  }
+
+  /* ===== MINI CHART (for dashboard cards) ===== */
+  .mini-chart { height: 100%; display: flex; align-items: flex-end; gap: 3px; padding: 20px 10px 10px; }
+  .mini-bar { flex: 1; background: #bfdbfe; border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<!-- ===== PROTOTYPE NAVIGATION ===== -->
+<div class="proto-nav">
+  <button class="active" onclick="showScreen('login')">Login</button>
+  <button onclick="showScreen('signup')">Sign Up</button>
+  <button onclick="showScreen('onboarding')">Onboarding</button>
+  <button onclick="showScreen('create-org')">Create Org</button>
+  <button onclick="showScreen('org-switcher')">Org Switcher</button>
+  <button onclick="showScreen('dashboards')">Dashboards</button>
+  <button onclick="showScreen('dashboard-view')">Dashboard View</button>
+  <button onclick="showScreen('dashboard-edit')">Dashboard Edit</button>
+  <button onclick="showScreen('alerts')">Alerts</button>
+  <button onclick="showScreen('alert-create')">Create Alert</button>
+  <button onclick="showScreen('alert-history')">Alert History</button>
+  <button onclick="showScreen('data')">Data Sources</button>
+  <button onclick="showScreen('api-keys')">API Keys</button>
+  <button onclick="showScreen('csv-upload')">CSV Upload</button>
+  <button onclick="showScreen('live-stream')">Live Stream</button>
+  <button onclick="showScreen('settings-team')">Team Settings</button>
+</div>
+
+<!-- ===== SCREEN: LOGIN ===== -->
+<div id="screen-login" class="screen active">
+  <div class="auth-wrapper">
+    <div class="auth-card">
+      <div class="auth-logo">
+        <div class="logo-icon">A</div>
+        <h1>Welcome back</h1>
+        <p>Sign in to Analytics Platform</p>
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" class="form-input" placeholder="alice@company.com" value="alice@shopco.com">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" class="form-input" placeholder="Enter your password" value="********">
+      </div>
+      <a href="#" class="forgot-link">Forgot password?</a>
+      <button class="btn btn-primary" onclick="showScreen('dashboards')">Sign In</button>
+      <div class="divider">or</div>
+      <button class="btn btn-outline">
+        <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+        Continue with Google
+      </button>
+      <div class="auth-footer">Don't have an account? <a href="#" onclick="showScreen('signup')">Sign up</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SCREEN: SIGNUP ===== -->
+<div id="screen-signup" class="screen">
+  <div class="auth-wrapper">
+    <div class="auth-card">
+      <div class="auth-logo">
+        <div class="logo-icon">A</div>
+        <h1>Create your account</h1>
+        <p>Start analyzing your data in minutes</p>
+      </div>
+      <div class="form-group">
+        <label>Full Name</label>
+        <input type="text" class="form-input" placeholder="Alice Smith">
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" class="form-input" placeholder="alice@company.com">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" class="form-input" placeholder="Min 8 characters">
+        <div class="form-hint">At least 8 characters, one uppercase letter, one number</div>
+      </div>
+      <div class="form-group">
+        <label>Organization Name</label>
+        <input type="text" class="form-input" placeholder="Your company or team name">
+        <div class="form-hint">This will be your team's workspace</div>
+      </div>
+      <button class="btn btn-primary" onclick="showScreen('onboarding')">Create Account</button>
+      <div class="divider">or</div>
+      <button class="btn btn-outline">
+        <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+        Continue with Google
+      </button>
+      <div class="auth-footer">Already have an account? <a href="#" onclick="showScreen('login')">Sign in</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SCREEN: ONBOARDING (after first signup) ===== -->
+<div id="screen-onboarding" class="screen">
+  <div class="auth-wrapper" style="background:linear-gradient(135deg,#0f172a 0%,#1e293b 100%)">
+    <div style="width:100%;max-width:600px">
+      <!-- Progress Steps -->
+      <div style="display:flex;justify-content:center;gap:8px;margin-bottom:32px">
+        <div style="width:40px;height:4px;border-radius:2px;background:#16a34a"></div>
+        <div style="width:40px;height:4px;border-radius:2px;background:#2563eb"></div>
+        <div style="width:40px;height:4px;border-radius:2px;background:#334155"></div>
+        <div style="width:40px;height:4px;border-radius:2px;background:#334155"></div>
+      </div>
+
+      <div class="auth-card" style="max-width:600px">
+        <div style="text-align:center;margin-bottom:32px">
+          <div style="width:64px;height:64px;background:#eff6ff;border-radius:16px;display:inline-flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:16px">&#127919;</div>
+          <h1 style="font-size:24px;font-weight:700;margin-bottom:4px">Set up your workspace</h1>
+          <p style="color:var(--text-secondary)">Step 2 of 4 - Tell us about your organization</p>
+        </div>
+
+        <div class="form-group">
+          <label>Organization Name</label>
+          <input type="text" class="form-input" value="ShopCo" placeholder="Your company or team name">
+          <div class="form-hint">This is where your team will collaborate</div>
+        </div>
+
+        <div class="form-group">
+          <label>Workspace URL</label>
+          <div style="display:flex;align-items:center;gap:0">
+            <span style="padding:10px 12px;background:var(--content-bg);border:1px solid var(--border);border-right:none;border-radius:var(--radius) 0 0 var(--radius);color:var(--text-muted);font-size:13px;white-space:nowrap">analytics.app/</span>
+            <input type="text" class="form-input" value="shopco" style="border-radius:0 var(--radius) var(--radius) 0" placeholder="your-org">
+          </div>
+          <div class="form-hint" style="color:var(--success)">analytics.app/shopco is available</div>
+        </div>
+
+        <div class="form-group">
+          <label>What describes your team best?</label>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px">
+            <div style="padding:12px;border:2px solid var(--primary);border-radius:var(--radius);background:#eff6ff;cursor:pointer;text-align:center">
+              <div style="font-size:20px;margin-bottom:4px">&#128722;</div>
+              <div style="font-weight:500;font-size:13px">E-Commerce</div>
+            </div>
+            <div style="padding:12px;border:2px solid var(--border);border-radius:var(--radius);cursor:pointer;text-align:center">
+              <div style="font-size:20px;margin-bottom:4px">&#128187;</div>
+              <div style="font-weight:500;font-size:13px">SaaS</div>
+            </div>
+            <div style="padding:12px;border:2px solid var(--border);border-radius:var(--radius);cursor:pointer;text-align:center">
+              <div style="font-size:20px;margin-bottom:4px">&#128241;</div>
+              <div style="font-weight:500;font-size:13px">Mobile App</div>
+            </div>
+            <div style="padding:12px;border:2px solid var(--border);border-radius:var(--radius);cursor:pointer;text-align:center">
+              <div style="font-size:20px;margin-bottom:4px">&#128296;</div>
+              <div style="font-weight:500;font-size:13px">Other</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Invite team members (optional)</label>
+          <div style="display:flex;gap:8px">
+            <input type="email" class="form-input" placeholder="colleague@company.com" style="flex:1">
+            <button class="btn btn-outline" style="width:auto;white-space:nowrap">+ Add</button>
+          </div>
+          <div style="margin-top:8px">
+            <span class="tag">bob@shopco.com <span class="remove">&#10005;</span></span>
+            <span class="tag">carol@shopco.com <span class="remove">&#10005;</span></span>
+          </div>
+          <div class="form-hint">They'll receive an email invitation to join your workspace</div>
+        </div>
+
+        <div style="display:flex;gap:8px;margin-top:24px">
+          <button class="btn btn-outline" style="width:auto" onclick="showScreen('signup')">&#8592; Back</button>
+          <button class="btn btn-primary" style="flex:1" onclick="showScreen('dashboards')">Create Workspace & Continue</button>
+        </div>
+
+        <div style="text-align:center;margin-top:12px">
+          <a href="#" style="font-size:13px;color:var(--text-muted)" onclick="showScreen('dashboards')">Skip for now</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SCREEN: CREATE ORG (from org switcher) ===== -->
+<div id="screen-create-org" class="screen">
+  <div class="platform">
+    <div class="sidebar">
+      <div class="sidebar-header"><div class="logo">A</div><span>Analytics</span></div>
+      <div class="sidebar-nav">
+        <div class="nav-item"><span class="icon">#</span> Dashboards</div>
+        <div class="nav-item"><span class="icon">!</span> Alerts</div>
+      </div>
+      <div class="sidebar-footer"><div class="org-switcher"><div class="org-avatar">S</div><div class="org-info"><div class="org-name">ShopCo</div><div class="org-role">Owner</div></div></div></div>
+    </div>
+    <div class="main">
+      <div class="topbar">
+        <div class="breadcrumbs"><span class="current">Create Organization</span></div>
+        <div class="topbar-right"><button class="icon-btn">&#128276;</button><button class="user-btn"><div class="user-avatar">AS</div></button></div>
+      </div>
+      <div class="content" style="max-width:560px;margin:0 auto">
+        <div style="text-align:center;margin-bottom:32px">
+          <div style="width:64px;height:64px;background:#eff6ff;border-radius:16px;display:inline-flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:16px;margin:0 auto 16px">&#127970;</div>
+          <h1 style="font-size:24px;font-weight:700;margin-bottom:4px">Create a new organization</h1>
+          <p style="color:var(--text-secondary)">Organizations are separate workspaces with their own data, dashboards, and team members.</p>
+        </div>
+
+        <div class="form-section">
+          <div class="form-group">
+            <label>Organization Name</label>
+            <input type="text" class="form-input" placeholder="e.g., StartupXYZ, My Side Project">
+          </div>
+          <div class="form-group">
+            <label>Workspace URL</label>
+            <div style="display:flex;align-items:center;gap:0">
+              <span style="padding:10px 12px;background:var(--content-bg);border:1px solid var(--border);border-right:none;border-radius:var(--radius) 0 0 var(--radius);color:var(--text-muted);font-size:13px;white-space:nowrap">analytics.app/</span>
+              <input type="text" class="form-input" placeholder="my-org" style="border-radius:0 var(--radius) var(--radius) 0">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Industry (optional)</label>
+            <select class="form-select">
+              <option value="">Select an industry...</option>
+              <option>E-Commerce</option>
+              <option>SaaS</option>
+              <option>Mobile App</option>
+              <option>FinTech</option>
+              <option>Healthcare</option>
+              <option>Other</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="background:#f0f9ff;border:1px solid #bfdbfe;border-radius:var(--radius);padding:16px;margin-bottom:20px">
+          <div style="font-weight:500;font-size:14px;color:#1e40af;margin-bottom:4px">You'll be the Owner</div>
+          <div style="font-size:13px;color:#1e40af;opacity:0.8">As the creator, you'll have full control. You can invite team members and assign roles after creation.</div>
+        </div>
+
+        <div style="display:flex;gap:8px;justify-content:flex-end">
+          <button class="btn btn-outline" style="width:auto" onclick="showScreen('org-switcher')">Cancel</button>
+          <button class="btn btn-primary" style="width:auto" onclick="showScreen('dashboards')">Create Organization</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SCREEN: ORG SWITCHER (dropdown expanded) ===== -->
+<div id="screen-org-switcher" class="screen">
+  <div class="platform">
+    <div class="sidebar" style="position:relative">
+      <div class="sidebar-header"><div class="logo">A</div><span>Analytics</span></div>
+      <div class="sidebar-nav">
+        <div class="nav-item active"><span class="icon">#</span> Dashboards</div>
+        <div class="nav-item"><span class="icon">!</span> Alerts <span class="badge">2</span></div>
+        <div class="nav-section"><div class="nav-section-label">Data</div><div class="nav-sub"><div class="nav-item"><span class="icon">&gt;</span> API Keys</div><div class="nav-item"><span class="icon">&uarr;</span> Upload CSV</div><div class="nav-item"><span class="icon">&bull;</span> Live Stream</div></div></div>
+      </div>
+      <div class="sidebar-footer" style="position:relative">
+        <div class="org-switcher" style="background:var(--sidebar-hover)">
+          <div class="org-avatar">S</div>
+          <div class="org-info">
+            <div class="org-name">ShopCo</div>
+            <div class="org-role">Owner</div>
+          </div>
+          <span class="chevron" style="transform:rotate(180deg)">&#9662;</span>
+        </div>
+
+        <!-- Dropdown overlay -->
+        <div style="position:absolute;bottom:100%;left:8px;right:8px;margin-bottom:4px;background:#1e293b;border:1px solid #334155;border-radius:8px;overflow:hidden;box-shadow:0 -10px 40px rgba(0,0,0,0.3);z-index:100">
+          <div style="padding:10px 12px;border-bottom:1px solid #334155;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;color:#64748b;font-weight:600">Switch Organization</div>
+
+          <!-- Current org -->
+          <div style="padding:10px 12px;display:flex;align-items:center;gap:10px;background:#334155;cursor:pointer">
+            <div style="width:32px;height:32px;background:#2563eb;border-radius:8px;display:flex;align-items:center;justify-content:center;color:white;font-weight:600;font-size:13px">S</div>
+            <div style="flex:1">
+              <div style="color:white;font-size:13px;font-weight:500">ShopCo</div>
+              <div style="color:#94a3b8;font-size:11px">Owner &bull; 3 members</div>
+            </div>
+            <span style="color:#2563eb;font-size:16px">&#10003;</span>
+          </div>
+
+          <!-- Other org -->
+          <div style="padding:10px 12px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:background 0.1s" onmouseover="this.style.background='#334155'" onmouseout="this.style.background='transparent'">
+            <div style="width:32px;height:32px;background:#7c3aed;border-radius:8px;display:flex;align-items:center;justify-content:center;color:white;font-weight:600;font-size:13px">X</div>
+            <div style="flex:1">
+              <div style="color:#e2e8f0;font-size:13px;font-weight:500">StartupXYZ</div>
+              <div style="color:#94a3b8;font-size:11px">Analyst &bull; 8 members</div>
+            </div>
+          </div>
+
+          <!-- Another org -->
+          <div style="padding:10px 12px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:background 0.1s" onmouseover="this.style.background='#334155'" onmouseout="this.style.background='transparent'">
+            <div style="width:32px;height:32px;background:#0ea5e9;border-radius:8px;display:flex;align-items:center;justify-content:center;color:white;font-weight:600;font-size:13px">F</div>
+            <div style="flex:1">
+              <div style="color:#e2e8f0;font-size:13px;font-weight:500">Freelance Co</div>
+              <div style="color:#94a3b8;font-size:11px">Viewer &bull; 2 members</div>
+            </div>
+          </div>
+
+          <!-- Create new -->
+          <div style="border-top:1px solid #334155;padding:10px 12px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:background 0.1s" onclick="showScreen('create-org')" onmouseover="this.style.background='#334155'" onmouseout="this.style.background='transparent'">
+            <div style="width:32px;height:32px;border:2px dashed #475569;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#64748b;font-size:18px">+</div>
+            <div style="color:#94a3b8;font-size:13px;font-weight:500">Create new organization</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main content showing what happens when you switch -->
+    <div class="main">
+      <div class="topbar">
+        <div class="breadcrumbs"><span class="current">Dashboards</span></div>
+        <div class="topbar-right">
+          <div class="search-box">Search... <kbd>&#8984;K</kbd></div>
+          <button class="icon-btn">&#128276;<span class="notif-badge">2</span></button>
+          <button class="user-btn"><div class="user-avatar">AS</div></button>
+        </div>
+      </div>
+      <div class="content">
+        <div class="page-header"><h1>Dashboards</h1></div>
+
+        <!-- Visual annotation -->
+        <div style="background:#fffbeb;border:1px solid #fbbf24;border-radius:var(--radius);padding:16px;margin-bottom:20px">
+          <div style="font-weight:600;color:#92400e;margin-bottom:4px">Org Switcher Flow</div>
+          <div style="font-size:13px;color:#92400e;line-height:1.6">
+            1. User clicks the org area at bottom of sidebar<br>
+            2. Dropdown appears showing all organizations the user belongs to<br>
+            3. Current org is highlighted with checkmark and blue background<br>
+            4. Each org shows: name, user's role, member count<br>
+            5. Clicking another org: calls <code>POST /auth/switch-org</code>, gets new JWT, page reloads with new org's data<br>
+            6. "Create new organization" opens the Create Org form<br>
+            7. The user's role can differ per org (Owner in ShopCo, Analyst in StartupXYZ)
+          </div>
+        </div>
+
+        <!-- Show role differences -->
+        <h3 style="font-size:15px;font-weight:600;margin-bottom:12px">What changes when switching orgs:</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+          <div class="card" style="padding:16px">
+            <div style="font-weight:600;margin-bottom:8px;display:flex;align-items:center;gap:8px">
+              <div style="width:24px;height:24px;background:#2563eb;border-radius:6px;display:flex;align-items:center;justify-content:center;color:white;font-size:10px;font-weight:700">S</div>
+              ShopCo
+            </div>
+            <div style="font-size:12px;color:var(--text-secondary);margin-bottom:8px">Role: <strong style="color:var(--text-primary)">Owner</strong></div>
+            <div style="font-size:12px;color:var(--text-secondary);line-height:1.6">
+              &#9989; All dashboards & alerts<br>
+              &#9989; Team management<br>
+              &#9989; API key management<br>
+              &#9989; Org settings & billing<br>
+              &#9989; Delete organization
+            </div>
+          </div>
+          <div class="card" style="padding:16px">
+            <div style="font-weight:600;margin-bottom:8px;display:flex;align-items:center;gap:8px">
+              <div style="width:24px;height:24px;background:#7c3aed;border-radius:6px;display:flex;align-items:center;justify-content:center;color:white;font-size:10px;font-weight:700">X</div>
+              StartupXYZ
+            </div>
+            <div style="font-size:12px;color:var(--text-secondary);margin-bottom:8px">Role: <strong style="color:var(--text-primary)">Analyst</strong></div>
+            <div style="font-size:12px;color:var(--text-secondary);line-height:1.6">
+              &#9989; View & create dashboards<br>
+              &#9989; Create alert rules<br>
+              &#9989; Upload CSV<br>
+              &#10060; No team management<br>
+              &#10060; No API keys
+            </div>
+          </div>
+          <div class="card" style="padding:16px">
+            <div style="font-weight:600;margin-bottom:8px;display:flex;align-items:center;gap:8px">
+              <div style="width:24px;height:24px;background:#0ea5e9;border-radius:6px;display:flex;align-items:center;justify-content:center;color:white;font-size:10px;font-weight:700">F</div>
+              Freelance Co
+            </div>
+            <div style="font-size:12px;color:var(--text-secondary);margin-bottom:8px">Role: <strong style="color:var(--text-primary)">Viewer</strong></div>
+            <div style="font-size:12px;color:var(--text-secondary);line-height:1.6">
+              &#9989; View dashboards<br>
+              &#9989; View alerts history<br>
+              &#10060; No create/edit anything<br>
+              &#10060; No team management<br>
+              &#10060; No data management
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SCREEN: DASHBOARDS LIST ===== -->
+<div id="screen-dashboards" class="screen">
+  <div class="platform">
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <div class="logo">A</div>
+        <span>Analytics</span>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-item active"><span class="icon">#</span> Dashboards</div>
+          <div class="nav-item"><span class="icon">!</span> Alerts <span class="badge">2</span></div>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-label">Data</div>
+          <div class="nav-sub">
+            <div class="nav-item"><span class="icon">&gt;</span> API Keys</div>
+            <div class="nav-item"><span class="icon">&uarr;</span> Upload CSV</div>
+            <div class="nav-item"><span class="icon">&bull;</span> Live Stream</div>
+          </div>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-label">Settings</div>
+          <div class="nav-sub">
+            <div class="nav-item"><span class="icon">&bull;</span> Organization</div>
+            <div class="nav-item"><span class="icon">&bull;</span> Team</div>
+            <div class="nav-item"><span class="icon">&bull;</span> Profile</div>
+          </div>
+        </div>
+      </div>
+      <div class="sidebar-footer">
+        <div class="org-switcher">
+          <div class="org-avatar">S</div>
+          <div class="org-info">
+            <div class="org-name">ShopCo</div>
+            <div class="org-role">Owner</div>
+          </div>
+          <span class="chevron">&#9662;</span>
+        </div>
+      </div>
+    </div>
+    <div class="main">
+      <div class="topbar">
+        <div class="breadcrumbs"><span class="current">Dashboards</span></div>
+        <div class="topbar-right">
+          <div class="search-box">Search... <kbd>&#8984;K</kbd></div>
+          <button class="icon-btn" style="position:relative">&#128276;<span class="notif-badge">2</span></button>
+          <button class="user-btn"><div class="user-avatar">AS</div></button>
+        </div>
+      </div>
+      <div class="content">
+        <div class="page-header">
+          <h1>Dashboards</h1>
+          <div class="page-header-actions">
+            <button class="btn btn-primary" style="width:auto">+ New Dashboard</button>
+          </div>
+        </div>
+        <div class="tabs">
+          <button class="tab active">All</button>
+          <button class="tab">My Dashboards</button>
+          <button class="tab">Shared with me</button>
+        </div>
+        <div class="card-grid">
+          <div class="dash-card" onclick="showScreen('dashboard-view')">
+            <h3>Sales Dashboard</h3>
+            <div class="dash-card-preview">
+              <div class="mini-chart" style="width:100%">
+                <div class="mini-bar" style="height:40%"></div>
+                <div class="mini-bar" style="height:65%"></div>
+                <div class="mini-bar" style="height:50%"></div>
+                <div class="mini-bar" style="height:80%"></div>
+                <div class="mini-bar" style="height:70%"></div>
+                <div class="mini-bar" style="height:90%"></div>
+                <div class="mini-bar" style="height:85%"></div>
+                <div class="mini-bar" style="height:60%"></div>
+                <div class="mini-bar" style="height:75%"></div>
+                <div class="mini-bar" style="height:95%"></div>
+              </div>
+            </div>
+            <div class="dash-card-meta">
+              <span>4 widgets</span>
+              <span>Updated 2h ago by Alice S.</span>
+            </div>
+          </div>
+          <div class="dash-card">
+            <h3>Web Analytics</h3>
+            <div class="dash-card-preview">
+              <div class="mini-chart" style="width:100%">
+                <div class="mini-bar" style="height:60%;background:#c4b5fd"></div>
+                <div class="mini-bar" style="height:45%;background:#c4b5fd"></div>
+                <div class="mini-bar" style="height:70%;background:#c4b5fd"></div>
+                <div class="mini-bar" style="height:55%;background:#c4b5fd"></div>
+                <div class="mini-bar" style="height:85%;background:#c4b5fd"></div>
+                <div class="mini-bar" style="height:90%;background:#c4b5fd"></div>
+                <div class="mini-bar" style="height:75%;background:#c4b5fd"></div>
+                <div class="mini-bar" style="height:65%;background:#c4b5fd"></div>
+                <div class="mini-bar" style="height:80%;background:#c4b5fd"></div>
+                <div class="mini-bar" style="height:70%;background:#c4b5fd"></div>
+              </div>
+            </div>
+            <div class="dash-card-meta">
+              <span>6 widgets</span>
+              <span>Updated 1d ago by Bob J.</span>
+            </div>
+          </div>
+          <div class="dash-card">
+            <h3>DevOps Monitor</h3>
+            <div class="dash-card-preview">
+              <div class="mini-chart" style="width:100%">
+                <div class="mini-bar" style="height:30%;background:#86efac"></div>
+                <div class="mini-bar" style="height:25%;background:#86efac"></div>
+                <div class="mini-bar" style="height:35%;background:#86efac"></div>
+                <div class="mini-bar" style="height:80%;background:#fca5a5"></div>
+                <div class="mini-bar" style="height:60%;background:#fca5a5"></div>
+                <div class="mini-bar" style="height:40%;background:#86efac"></div>
+                <div class="mini-bar" style="height:30%;background:#86efac"></div>
+                <div class="mini-bar" style="height:25%;background:#86efac"></div>
+                <div class="mini-bar" style="height:35%;background:#86efac"></div>
+                <div class="mini-bar" style="height:30%;background:#86efac"></div>
+              </div>
+            </div>
+            <div class="dash-card-meta">
+              <span>3 widgets</span>
+              <span>Updated 5m ago by Alice S.</span>
+            </div>
+          </div>
+          <div class="dash-card dash-card-template">
+            <div style="font-size:32px;margin-bottom:8px">+</div>
+            <div style="font-weight:500">Create from Template</div>
+            <div style="font-size:12px;margin-top:4px">E-Commerce, Web Analytics, DevOps</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SCREEN: DASHBOARD VIEW ===== -->
+<div id="screen-dashboard-view" class="screen">
+  <div class="platform">
+    <div class="sidebar">
+      <div class="sidebar-header"><div class="logo">A</div><span>Analytics</span></div>
+      <div class="sidebar-nav">
+        <div class="nav-item active"><span class="icon">#</span> Dashboards</div>
+        <div class="nav-item"><span class="icon">!</span> Alerts <span class="badge">2</span></div>
+        <div class="nav-section"><div class="nav-section-label">Data</div><div class="nav-sub"><div class="nav-item"><span class="icon">&gt;</span> API Keys</div><div class="nav-item"><span class="icon">&uarr;</span> Upload CSV</div><div class="nav-item"><span class="icon">&bull;</span> Live Stream</div></div></div>
+      </div>
+      <div class="sidebar-footer"><div class="org-switcher"><div class="org-avatar">S</div><div class="org-info"><div class="org-name">ShopCo</div><div class="org-role">Owner</div></div><span class="chevron">&#9662;</span></div></div>
+    </div>
+    <div class="main">
+      <div class="topbar">
+        <div class="breadcrumbs"><a href="#" onclick="showScreen('dashboards')">Dashboards</a> <span>/</span> <span class="current">Sales Dashboard</span></div>
+        <div class="topbar-right">
+          <div class="search-box">Search... <kbd>&#8984;K</kbd></div>
+          <button class="icon-btn">&#128276;<span class="notif-badge">2</span></button>
+          <button class="user-btn"><div class="user-avatar">AS</div></button>
+        </div>
+      </div>
+      <div class="content">
+        <div class="dashboard-toolbar">
+          <span class="title">Sales Dashboard</span>
+          <div class="time-selector">
+            <button>1h</button>
+            <button>6h</button>
+            <button class="active">24h</button>
+            <button>7d</button>
+            <button>30d</button>
+          </div>
+          <select style="padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;background:white">
+            <option>Auto-refresh: Off</option>
+            <option>30 seconds</option>
+            <option selected>1 minute</option>
+            <option>5 minutes</option>
+          </select>
+          <button class="btn btn-outline btn-sm" onclick="showScreen('dashboard-edit')">Edit</button>
+          <button class="btn btn-outline btn-sm">Share</button>
+          <button class="btn btn-outline btn-sm">Present</button>
+        </div>
+
+        <div class="widget-grid">
+          <!-- Line Chart Widget -->
+          <div class="widget widget-6">
+            <div class="widget-header"><h4>Purchases per Hour</h4><button class="btn-ghost">...</button></div>
+            <div class="widget-body">
+              <div class="chart-line">
+                <svg viewBox="0 0 400 160" preserveAspectRatio="none">
+                  <defs>
+                    <linearGradient id="lineGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="#2563eb" stop-opacity="0.2"/>
+                      <stop offset="100%" stop-color="#2563eb" stop-opacity="0"/>
+                    </linearGradient>
+                  </defs>
+                  <path d="M0,120 Q20,100 40,90 T80,70 T120,85 T160,50 T200,65 T240,40 T280,55 T320,30 T360,45 T400,25" fill="none" stroke="#2563eb" stroke-width="2.5"/>
+                  <path d="M0,120 Q20,100 40,90 T80,70 T120,85 T160,50 T200,65 T240,40 T280,55 T320,30 T360,45 T400,25 V160 H0 Z" fill="url(#lineGrad)"/>
+                  <!-- grid lines -->
+                  <line x1="0" y1="40" x2="400" y2="40" stroke="#e2e8f0" stroke-width="0.5"/>
+                  <line x1="0" y1="80" x2="400" y2="80" stroke="#e2e8f0" stroke-width="0.5"/>
+                  <line x1="0" y1="120" x2="400" y2="120" stroke="#e2e8f0" stroke-width="0.5"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <!-- KPI Widget -->
+          <div class="widget widget-6">
+            <div class="widget-header"><h4>Total Revenue</h4><button class="btn-ghost">...</button></div>
+            <div class="widget-body" style="text-align:center;padding:24px">
+              <div class="kpi-value">$12,450</div>
+              <div class="kpi-change up">&#9650; 12.3% vs yesterday</div>
+              <div class="kpi-label">Last 24 hours</div>
+            </div>
+          </div>
+
+          <!-- Table Widget -->
+          <div class="widget widget-6">
+            <div class="widget-header"><h4>Top Products</h4><button class="btn-ghost">...</button></div>
+            <div class="widget-body" style="padding:0">
+              <table class="data-table">
+                <thead><tr><th>Product</th><th>Sales</th><th>Revenue</th></tr></thead>
+                <tbody>
+                  <tr><td>Running Shoes</td><td>142</td><td>$8,520</td></tr>
+                  <tr><td>T-Shirts</td><td>98</td><td>$2,940</td></tr>
+                  <tr><td>Sneakers</td><td>76</td><td>$5,320</td></tr>
+                  <tr><td>Jackets</td><td>45</td><td>$3,600</td></tr>
+                  <tr><td>Hats</td><td>31</td><td>$930</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Pie Chart Widget -->
+          <div class="widget widget-6">
+            <div class="widget-header"><h4>Sales by Region</h4><button class="btn-ghost">...</button></div>
+            <div class="widget-body" style="display:flex;align-items:center;gap:24px;justify-content:center">
+              <div class="chart-pie" style="background: conic-gradient(#2563eb 0deg 162deg, #7c3aed 162deg 270deg, #0ea5e9 270deg 360deg);">
+                <div style="position:absolute;inset:25%;background:white;border-radius:50%"></div>
+              </div>
+              <div style="font-size:13px">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span class="severity-dot" style="background:#2563eb"></span> US <strong>45%</strong></div>
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span class="severity-dot" style="background:#7c3aed"></span> EU <strong>30%</strong></div>
+                <div style="display:flex;align-items:center;gap:8px"><span class="severity-dot" style="background:#0ea5e9"></span> APAC <strong>25%</strong></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SCREEN: DASHBOARD EDIT ===== -->
+<div id="screen-dashboard-edit" class="screen">
+  <div class="platform">
+    <div class="sidebar">
+      <div class="sidebar-header"><div class="logo">A</div><span>Analytics</span></div>
+      <div class="sidebar-nav">
+        <div class="nav-item active"><span class="icon">#</span> Dashboards</div>
+        <div class="nav-item"><span class="icon">!</span> Alerts <span class="badge">2</span></div>
+      </div>
+      <div class="sidebar-footer"><div class="org-switcher"><div class="org-avatar">S</div><div class="org-info"><div class="org-name">ShopCo</div><div class="org-role">Owner</div></div></div></div>
+    </div>
+    <div class="main">
+      <div class="topbar">
+        <div class="breadcrumbs"><a href="#" onclick="showScreen('dashboard-view')">&larr; Back</a> &nbsp; <span class="current">Sales Dashboard</span> <span class="status-info" style="margin-left:8px">Editing</span></div>
+        <div class="topbar-right">
+          <button class="btn btn-outline btn-sm">+ Add Widget</button>
+          <button class="btn btn-outline btn-sm">Undo</button>
+          <button class="btn btn-outline btn-sm">Redo</button>
+          <button class="btn btn-ghost btn-sm">Discard</button>
+          <button class="btn btn-primary btn-sm" style="width:auto">Save</button>
+        </div>
+      </div>
+      <div class="content" style="padding:0;display:flex">
+        <div class="edit-canvas" style="flex:1;padding:24px">
+          <div class="widget-grid">
+            <div class="widget widget-6" style="border:2px solid var(--primary);cursor:move">
+              <div class="widget-header" style="background:#eff6ff"><h4>&#9776; Purchases per Hour</h4><span style="cursor:pointer;color:var(--text-muted)">&#10005;</span></div>
+              <div class="widget-body"><div class="chart-line"><svg viewBox="0 0 400 160" preserveAspectRatio="none"><path d="M0,120 Q20,100 40,90 T80,70 T120,85 T160,50 T200,65 T240,40 T280,55 T320,30 T360,45 T400,25" fill="none" stroke="#2563eb" stroke-width="2.5"/></svg></div></div>
+            </div>
+            <div class="widget widget-6" style="cursor:move;opacity:0.9">
+              <div class="widget-header"><h4>&#9776; Revenue Today</h4><span style="cursor:pointer;color:var(--text-muted)">&#10005;</span></div>
+              <div class="widget-body" style="text-align:center;padding:24px"><div class="kpi-value">$12,450</div><div class="kpi-change up">&#9650; 12.3%</div></div>
+            </div>
+            <div class="widget widget-6" style="cursor:move;opacity:0.9">
+              <div class="widget-header"><h4>&#9776; Top Products</h4><span style="cursor:pointer;color:var(--text-muted)">&#10005;</span></div>
+              <div class="widget-body" style="padding:0"><table class="data-table"><thead><tr><th>Product</th><th>Sales</th></tr></thead><tbody><tr><td>Running Shoes</td><td>142</td></tr><tr><td>T-Shirts</td><td>98</td></tr></tbody></table></div>
+            </div>
+            <div class="widget widget-6" style="cursor:move;opacity:0.9">
+              <div class="widget-header"><h4>&#9776; Sales by Region</h4><span style="cursor:pointer;color:var(--text-muted)">&#10005;</span></div>
+              <div class="widget-body" style="display:flex;justify-content:center;padding:20px"><div class="chart-pie" style="width:120px;height:120px;background:conic-gradient(#2563eb 0deg 162deg, #7c3aed 162deg 270deg, #0ea5e9 270deg 360deg)"><div style="position:absolute;inset:25%;background:white;border-radius:50%"></div></div></div>
+            </div>
+          </div>
+        </div>
+        <!-- Config Panel -->
+        <div class="config-panel">
+          <h3>Widget Configuration</h3>
+          <div class="config-tabs">
+            <button class="config-tab active">Data</button>
+            <button class="config-tab">Display</button>
+          </div>
+          <div class="form-group">
+            <label>Event Type</label>
+            <select class="form-select"><option selected>purchase</option><option>page_view</option><option>signup</option><option>error</option></select>
+          </div>
+          <div class="form-group">
+            <label>Metric</label>
+            <select class="form-select"><option selected>count</option><option>sum</option><option>avg</option><option>min</option><option>max</option></select>
+          </div>
+          <div class="form-group">
+            <label>Time Bucket</label>
+            <select class="form-select"><option>minute</option><option selected>hour</option><option>day</option><option>week</option></select>
+          </div>
+          <div class="form-group">
+            <label>Group By (optional)</label>
+            <select class="form-select"><option selected>none</option><option>properties.category</option><option>properties.region</option><option>actor_id</option></select>
+          </div>
+          <div class="form-group">
+            <label>Filters</label>
+            <button class="btn btn-outline btn-sm" style="width:auto">+ Add Filter</button>
+          </div>
+          <div style="margin-top:20px">
+            <button class="btn btn-primary" style="width:100%">Apply Changes</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SCREEN: ALERTS LIST ===== -->
+<div id="screen-alerts" class="screen">
+  <div class="platform">
+    <div class="sidebar">
+      <div class="sidebar-header"><div class="logo">A</div><span>Analytics</span></div>
+      <div class="sidebar-nav">
+        <div class="nav-item"><span class="icon">#</span> Dashboards</div>
+        <div class="nav-item active"><span class="icon">!</span> Alerts <span class="badge">2</span></div>
+        <div class="nav-section"><div class="nav-section-label">Data</div><div class="nav-sub"><div class="nav-item"><span class="icon">&gt;</span> API Keys</div><div class="nav-item"><span class="icon">&uarr;</span> Upload CSV</div><div class="nav-item"><span class="icon">&bull;</span> Live Stream</div></div></div>
+      </div>
+      <div class="sidebar-footer"><div class="org-switcher"><div class="org-avatar">S</div><div class="org-info"><div class="org-name">ShopCo</div><div class="org-role">Owner</div></div></div></div>
+    </div>
+    <div class="main">
+      <div class="topbar">
+        <div class="breadcrumbs"><span class="current">Alerts</span></div>
+        <div class="topbar-right">
+          <div class="search-box">Search... <kbd>&#8984;K</kbd></div>
+          <button class="icon-btn">&#128276;<span class="notif-badge">2</span></button>
+          <button class="user-btn"><div class="user-avatar">AS</div></button>
+        </div>
+      </div>
+      <div class="content">
+        <div class="page-header">
+          <h1>Alert Rules</h1>
+          <div class="page-header-actions">
+            <button class="btn btn-outline btn-sm" onclick="showScreen('alert-history')">View History</button>
+            <button class="btn btn-primary" style="width:auto" onclick="showScreen('alert-create')">+ New Alert Rule</button>
+          </div>
+        </div>
+        <div class="tabs">
+          <button class="tab active">All (3)</button>
+          <button class="tab">Active (2)</button>
+          <button class="tab">Triggered (1)</button>
+          <button class="tab">Muted (1)</button>
+        </div>
+
+        <div class="alert-rule">
+          <span class="severity-dot dot-critical"></span>
+          <div class="alert-info">
+            <div class="alert-name">High Error Rate</div>
+            <div class="alert-desc">Error count &gt; 50 in 10 minutes</div>
+            <div class="alert-meta">Last triggered: 2 hours ago &bull; Channels: In-App, Email, Slack</div>
+          </div>
+          <span class="status status-critical">Critical</span>
+          <div class="alert-actions">
+            <button class="btn btn-ghost btn-sm">Mute</button>
+            <button class="btn btn-ghost btn-sm">Edit</button>
+            <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+          </div>
+        </div>
+
+        <div class="alert-rule">
+          <span class="severity-dot dot-warning"></span>
+          <div class="alert-info">
+            <div class="alert-name">Low Purchase Volume</div>
+            <div class="alert-desc">Purchase count &lt; 10 in 30 minutes</div>
+            <div class="alert-meta">Last triggered: Never &bull; Channels: In-App, Email</div>
+          </div>
+          <span class="status status-warning">Warning</span>
+          <div class="alert-actions">
+            <button class="btn btn-ghost btn-sm">Mute</button>
+            <button class="btn btn-ghost btn-sm">Edit</button>
+            <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+          </div>
+        </div>
+
+        <div class="alert-rule" style="opacity:0.7">
+          <span class="severity-dot dot-info"></span>
+          <div class="alert-info">
+            <div class="alert-name">Revenue Target Hit</div>
+            <div class="alert-desc">Revenue sum &gt; $5,000 in 60 minutes</div>
+            <div class="alert-meta">Muted until 4:00 PM &bull; 45 min remaining</div>
+          </div>
+          <span class="status status-muted">Muted</span>
+          <div class="alert-actions">
+            <button class="btn btn-ghost btn-sm">Unmute</button>
+            <button class="btn btn-ghost btn-sm">Edit</button>
+            <div class="toggle" onclick="this.classList.toggle('on')"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SCREEN: CREATE ALERT ===== -->
+<div id="screen-alert-create" class="screen">
+  <div class="platform">
+    <div class="sidebar">
+      <div class="sidebar-header"><div class="logo">A</div><span>Analytics</span></div>
+      <div class="sidebar-nav"><div class="nav-item"><span class="icon">#</span> Dashboards</div><div class="nav-item active"><span class="icon">!</span> Alerts</div></div>
+      <div class="sidebar-footer"><div class="org-switcher"><div class="org-avatar">S</div><div class="org-info"><div class="org-name">ShopCo</div><div class="org-role">Owner</div></div></div></div>
+    </div>
+    <div class="main">
+      <div class="topbar">
+        <div class="breadcrumbs"><a href="#" onclick="showScreen('alerts')">&larr; Alerts</a> <span>/</span> <span class="current">Create Alert Rule</span></div>
+        <div class="topbar-right"><button class="icon-btn">&#128276;</button><button class="user-btn"><div class="user-avatar">AS</div></button></div>
+      </div>
+      <div class="content" style="max-width:720px">
+        <h1 style="font-size:24px;font-weight:700;margin-bottom:24px">Create Alert Rule</h1>
+
+        <div class="form-section">
+          <h3>General</h3>
+          <div class="form-group">
+            <label>Name</label>
+            <input type="text" class="form-input" value="High Error Rate">
+          </div>
+          <div class="form-group">
+            <label>Description (optional)</label>
+            <textarea class="form-input" rows="2" style="resize:vertical">Alert when error count exceeds safe threshold</textarea>
+          </div>
+          <div class="form-group">
+            <label>Severity</label>
+            <div style="display:flex;gap:8px;margin-top:4px">
+              <button class="btn btn-outline btn-sm" style="width:auto">Info</button>
+              <button class="btn btn-outline btn-sm" style="width:auto">Warning</button>
+              <button class="btn btn-sm" style="width:auto;background:var(--error);color:white">Critical</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h3>Condition</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Event Type</label>
+              <select class="form-select"><option>purchase</option><option selected>error</option><option>page_view</option><option>signup</option></select>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:flex-end;margin-bottom:16px">
+            <div class="form-group" style="margin-bottom:0">
+              <label>Metric</label>
+              <select class="form-select"><option selected>count</option><option>sum</option><option>avg</option></select>
+            </div>
+            <div class="form-group" style="margin-bottom:0">
+              <label>Operator</label>
+              <select class="form-select"><option selected>greater than</option><option>less than</option><option>equal to</option></select>
+            </div>
+            <div class="form-group" style="margin-bottom:0">
+              <label>Threshold</label>
+              <input type="number" class="form-input" value="50">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Time Window</label>
+              <div style="display:flex;align-items:center;gap:8px">
+                <input type="number" class="form-input" value="10" style="width:80px"> <span style="color:var(--text-secondary)">minutes</span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Cooldown</label>
+              <div style="display:flex;align-items:center;gap:8px">
+                <input type="number" class="form-input" value="15" style="width:80px"> <span style="color:var(--text-secondary)">minutes</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h3>Notifications</h3>
+          <div class="form-group">
+            <label>Channels</label>
+            <div class="checkbox-group">
+              <label class="checkbox-item"><div class="checkbox checked">&#10003;</div> In-App</label>
+              <label class="checkbox-item"><div class="checkbox checked">&#10003;</div> Email</label>
+              <label class="checkbox-item"><div class="checkbox checked">&#10003;</div> Webhook</label>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Email Recipients</label>
+            <div>
+              <span class="tag">alice@shopco.com <span class="remove">&#10005;</span></span>
+              <span class="tag">bob@shopco.com <span class="remove">&#10005;</span></span>
+              <button class="btn btn-ghost btn-sm" style="width:auto">+ Add</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Webhook URL</label>
+            <input type="url" class="form-input" value="https://hooks.slack.com/services/T00/B00/xxx" placeholder="https://hooks.slack.com/...">
+          </div>
+        </div>
+
+        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:24px">
+          <button class="btn btn-outline" style="width:auto" onclick="showScreen('alerts')">Cancel</button>
+          <button class="btn btn-primary" style="width:auto" onclick="showScreen('alerts')">Create Alert Rule</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SCREEN: ALERT HISTORY ===== -->
+<div id="screen-alert-history" class="screen">
+  <div class="platform">
+    <div class="sidebar">
+      <div class="sidebar-header"><div class="logo">A</div><span>Analytics</span></div>
+      <div class="sidebar-nav"><div class="nav-item"><span class="icon">#</span> Dashboards</div><div class="nav-item active"><span class="icon">!</span> Alerts</div></div>
+      <div class="sidebar-footer"><div class="org-switcher"><div class="org-avatar">S</div><div class="org-info"><div class="org-name">ShopCo</div><div class="org-role">Owner</div></div></div></div>
+    </div>
+    <div class="main">
+      <div class="topbar">
+        <div class="breadcrumbs"><a href="#" onclick="showScreen('alerts')">&larr; Alerts</a> <span>/</span> <span class="current">History</span></div>
+        <div class="topbar-right"><button class="icon-btn">&#128276;</button><button class="user-btn"><div class="user-avatar">AS</div></button></div>
+      </div>
+      <div class="content">
+        <div class="page-header"><h1>Alert History</h1>
+          <div class="time-selector"><button>24h</button><button class="active">7d</button><button>30d</button></div>
+        </div>
+        <div class="tabs"><button class="tab active">All</button><button class="tab">Firing</button><button class="tab">Acknowledged</button><button class="tab">Resolved</button></div>
+        <div class="card" style="overflow:hidden">
+          <table class="data-table">
+            <thead><tr><th>Status</th><th>Rule</th><th>Value</th><th>Threshold</th><th>Fired At</th><th>Resolved At</th></tr></thead>
+            <tbody>
+              <tr><td><span class="status status-firing">Firing</span></td><td>High Error Rate</td><td><strong>73</strong></td><td>&gt; 50</td><td>Today 2:05 PM</td><td>-</td></tr>
+              <tr><td><span class="status status-resolved">Resolved</span></td><td>Low Purchases</td><td><strong>23</strong></td><td>&lt; 10</td><td>Today 1:15 PM</td><td>Today 1:42 PM</td></tr>
+              <tr><td><span class="status status-resolved">Resolved</span></td><td>High Error Rate</td><td><strong>89</strong></td><td>&gt; 50</td><td>Today 11:30 AM</td><td>Today 11:58 AM</td></tr>
+              <tr><td><span class="status status-acked">Acked</span></td><td>Low Purchases</td><td><strong>7</strong></td><td>&lt; 10</td><td>Today 9:45 AM</td><td>Today 10:20 AM</td></tr>
+              <tr><td><span class="status status-resolved">Resolved</span></td><td>High Error Rate</td><td><strong>62</strong></td><td>&gt; 50</td><td>Yesterday 8:15 PM</td><td>Yesterday 8:30 PM</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;color:var(--text-secondary);font-size:13px">
+          <span>Showing 1-5 of 12</span>
+          <div style="display:flex;gap:4px"><button class="btn btn-outline btn-sm" style="width:auto">&lt;</button><button class="btn btn-sm" style="width:auto;background:var(--primary);color:white">1</button><button class="btn btn-outline btn-sm" style="width:auto">2</button><button class="btn btn-outline btn-sm" style="width:auto">3</button><button class="btn btn-outline btn-sm" style="width:auto">&gt;</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SCREEN: DATA SOURCES ===== -->
+<div id="screen-data" class="screen">
+  <div class="platform">
+    <div class="sidebar">
+      <div class="sidebar-header"><div class="logo">A</div><span>Analytics</span></div>
+      <div class="sidebar-nav">
+        <div class="nav-item"><span class="icon">#</span> Dashboards</div>
+        <div class="nav-item"><span class="icon">!</span> Alerts</div>
+        <div class="nav-section"><div class="nav-section-label">Data</div><div class="nav-sub"><div class="nav-item active"><span class="icon">&gt;</span> Overview</div><div class="nav-item"><span class="icon">&gt;</span> API Keys</div><div class="nav-item"><span class="icon">&uarr;</span> Upload CSV</div><div class="nav-item"><span class="icon">&bull;</span> Live Stream</div></div></div>
+      </div>
+      <div class="sidebar-footer"><div class="org-switcher"><div class="org-avatar">S</div><div class="org-info"><div class="org-name">ShopCo</div><div class="org-role">Owner</div></div></div></div>
+    </div>
+    <div class="main">
+      <div class="topbar"><div class="breadcrumbs"><span class="current">Data Sources</span></div><div class="topbar-right"><div class="search-box">Search... <kbd>&#8984;K</kbd></div><button class="icon-btn">&#128276;</button><button class="user-btn"><div class="user-avatar">AS</div></button></div></div>
+      <div class="content">
+        <div class="page-header"><h1>Data Sources</h1></div>
+        <div class="source-grid">
+          <div class="source-card" onclick="showScreen('api-keys')" style="cursor:pointer">
+            <h3><span style="font-size:20px">&#9889;</span> API Events</h3>
+            <div class="stat">24,531</div>
+            <div class="stat-label">events today</div>
+            <div style="color:var(--text-secondary);font-size:13px;margin-top:4px">142 events/min average</div>
+            <a href="#" class="link" onclick="event.stopPropagation();showScreen('api-keys')">Manage API Keys &rarr;</a>
+          </div>
+          <div class="source-card" onclick="showScreen('csv-upload')" style="cursor:pointer">
+            <h3><span style="font-size:20px">&#128196;</span> CSV Uploads</h3>
+            <div class="stat">3</div>
+            <div class="stat-label">uploads this month</div>
+            <div style="color:var(--text-secondary);font-size:13px;margin-top:4px">Last: sales_q1.csv (1,523 rows)</div>
+            <a href="#" class="link" onclick="event.stopPropagation();showScreen('csv-upload')">Upload CSV &rarr;</a>
+          </div>
+          <div class="source-card">
+            <h3><span style="font-size:20px">&#128279;</span> Webhook Sources</h3>
+            <div class="stat">2</div>
+            <div class="stat-label">active webhooks</div>
+            <div style="color:var(--text-secondary);font-size:13px;margin-top:4px">Stripe, GitHub</div>
+            <a href="#" class="link">Manage Webhooks &rarr;</a>
+          </div>
+          <div class="source-card" onclick="showScreen('live-stream')" style="cursor:pointer">
+            <h3><span style="font-size:20px">&#9679;</span> Live Stream</h3>
+            <div class="stat" style="color:var(--success)">Active</div>
+            <div class="stat-label">~3.5 events/sec</div>
+            <div style="color:var(--text-secondary);font-size:13px;margin-top:4px">Real-time event viewer</div>
+            <a href="#" class="link" onclick="event.stopPropagation();showScreen('live-stream')">Open Live Stream &rarr;</a>
+          </div>
+        </div>
+
+        <h2 style="font-size:16px;font-weight:600;margin-bottom:12px">Recent Events</h2>
+        <div class="card" style="overflow:hidden">
+          <table class="data-table">
+            <thead><tr><th>Time</th><th>Type</th><th>Actor</th><th>Source</th><th>Properties</th></tr></thead>
+            <tbody>
+              <tr><td style="font-family:monospace;font-size:12px">14:32:01</td><td><span class="stream-type purchase">purchase</span></td><td>user-8842</td><td>api</td><td style="font-family:monospace;font-size:12px;color:var(--text-muted)">{amount: 79.99, product: "Running Shoes"}</td></tr>
+              <tr><td style="font-family:monospace;font-size:12px">14:31:58</td><td><span class="stream-type page_view">page_view</span></td><td>user-1234</td><td>api</td><td style="font-family:monospace;font-size:12px;color:var(--text-muted)">{url: "/products", referrer: "/home"}</td></tr>
+              <tr><td style="font-family:monospace;font-size:12px">14:31:45</td><td><span class="stream-type error">error</span></td><td>-</td><td>webhook</td><td style="font-family:monospace;font-size:12px;color:var(--text-muted)">{code: 500, service: "payments"}</td></tr>
+              <tr><td style="font-family:monospace;font-size:12px">14:31:42</td><td><span class="stream-type signup">signup</span></td><td>user-9001</td><td>api</td><td style="font-family:monospace;font-size:12px;color:var(--text-muted)">{plan: "free", source: "google_ads"}</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SCREEN: API KEYS ===== -->
+<div id="screen-api-keys" class="screen">
+  <div class="platform">
+    <div class="sidebar">
+      <div class="sidebar-header"><div class="logo">A</div><span>Analytics</span></div>
+      <div class="sidebar-nav"><div class="nav-item"><span class="icon">#</span> Dashboards</div><div class="nav-item"><span class="icon">!</span> Alerts</div><div class="nav-section"><div class="nav-section-label">Data</div><div class="nav-sub"><div class="nav-item"><span class="icon">&gt;</span> Overview</div><div class="nav-item active"><span class="icon">&gt;</span> API Keys</div><div class="nav-item"><span class="icon">&uarr;</span> Upload CSV</div><div class="nav-item"><span class="icon">&bull;</span> Live Stream</div></div></div></div>
+      <div class="sidebar-footer"><div class="org-switcher"><div class="org-avatar">S</div><div class="org-info"><div class="org-name">ShopCo</div><div class="org-role">Owner</div></div></div></div>
+    </div>
+    <div class="main">
+      <div class="topbar"><div class="breadcrumbs"><a href="#" onclick="showScreen('data')">Data</a> <span>/</span> <span class="current">API Keys</span></div><div class="topbar-right"><button class="icon-btn">&#128276;</button><button class="user-btn"><div class="user-avatar">AS</div></button></div></div>
+      <div class="content">
+        <div class="page-header"><h1>API Keys</h1><button class="btn btn-primary" style="width:auto">+ Create API Key</button></div>
+        <div class="card" style="overflow:hidden">
+          <table class="data-table">
+            <thead><tr><th>Name</th><th>Key Prefix</th><th>Scopes</th><th>Created</th><th>Last Used</th><th></th></tr></thead>
+            <tbody>
+              <tr>
+                <td><strong>Production Backend</strong></td>
+                <td style="font-family:monospace">ak_live_7f3d</td>
+                <td><span class="tag" style="margin:0">ingest</span></td>
+                <td>May 10, 2026</td>
+                <td>2 minutes ago</td>
+                <td><button class="btn btn-ghost btn-sm">...</button></td>
+              </tr>
+              <tr>
+                <td><strong>Staging Environment</strong></td>
+                <td style="font-family:monospace">ak_test_3b2a</td>
+                <td><span class="tag" style="margin:0">ingest</span></td>
+                <td>Apr 22, 2026</td>
+                <td>3 days ago</td>
+                <td><button class="btn btn-ghost btn-sm">...</button></td>
+              </tr>
+              <tr>
+                <td><strong>CI Pipeline</strong></td>
+                <td style="font-family:monospace">ak_live_a2f8</td>
+                <td><span class="tag" style="margin:0">ingest</span> <span class="tag" style="margin:0">read</span></td>
+                <td>Mar 15, 2026</td>
+                <td style="color:var(--text-muted)">Never</td>
+                <td><button class="btn btn-ghost btn-sm">...</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SCREEN: CSV UPLOAD ===== -->
+<div id="screen-csv-upload" class="screen">
+  <div class="platform">
+    <div class="sidebar">
+      <div class="sidebar-header"><div class="logo">A</div><span>Analytics</span></div>
+      <div class="sidebar-nav"><div class="nav-item"><span class="icon">#</span> Dashboards</div><div class="nav-item"><span class="icon">!</span> Alerts</div><div class="nav-section"><div class="nav-section-label">Data</div><div class="nav-sub"><div class="nav-item"><span class="icon">&gt;</span> Overview</div><div class="nav-item"><span class="icon">&gt;</span> API Keys</div><div class="nav-item active"><span class="icon">&uarr;</span> Upload CSV</div><div class="nav-item"><span class="icon">&bull;</span> Live Stream</div></div></div></div>
+      <div class="sidebar-footer"><div class="org-switcher"><div class="org-avatar">S</div><div class="org-info"><div class="org-name">ShopCo</div><div class="org-role">Owner</div></div></div></div>
+    </div>
+    <div class="main">
+      <div class="topbar"><div class="breadcrumbs"><a href="#" onclick="showScreen('data')">Data</a> <span>/</span> <span class="current">Upload CSV</span></div><div class="topbar-right"><button class="icon-btn">&#128276;</button><button class="user-btn"><div class="user-avatar">AS</div></button></div></div>
+      <div class="content" style="max-width:720px">
+        <h1 style="font-size:24px;font-weight:700;margin-bottom:8px">Upload CSV</h1>
+        <p style="color:var(--text-secondary);margin-bottom:24px">Import historical data from a CSV file</p>
+
+        <div class="steps-bar">
+          <div class="step active">1. Upload File</div>
+          <div class="step">2. Map Columns</div>
+          <div class="step">3. Import</div>
+        </div>
+
+        <div class="upload-zone">
+          <div class="upload-icon">&#9729;</div>
+          <div style="font-weight:500;font-size:16px;margin-bottom:4px">Drag & drop your CSV file here</div>
+          <div style="color:var(--text-secondary)">or <a href="#">click to browse</a></div>
+          <div style="color:var(--text-muted);font-size:12px;margin-top:12px">Max file size: 50MB &bull; Supported: .csv, .tsv</div>
+        </div>
+
+        <h3 style="font-size:15px;font-weight:600;margin:24px 0 12px">Previous Uploads</h3>
+        <div class="card" style="overflow:hidden">
+          <table class="data-table">
+            <thead><tr><th>Filename</th><th>Rows</th><th>Status</th><th>Uploaded</th></tr></thead>
+            <tbody>
+              <tr><td>sales_q1_2026.csv</td><td>1,523</td><td><span class="status status-active">Completed</span></td><td>May 12, 2026</td></tr>
+              <tr><td>customers_export.csv</td><td>892</td><td><span class="status status-active">Completed</span></td><td>May 8, 2026</td></tr>
+              <tr><td>error_logs.csv</td><td>-</td><td><span class="status status-firing">Failed</span></td><td>May 5, 2026</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SCREEN: LIVE STREAM ===== -->
+<div id="screen-live-stream" class="screen">
+  <div class="platform">
+    <div class="sidebar">
+      <div class="sidebar-header"><div class="logo">A</div><span>Analytics</span></div>
+      <div class="sidebar-nav"><div class="nav-item"><span class="icon">#</span> Dashboards</div><div class="nav-item"><span class="icon">!</span> Alerts</div><div class="nav-section"><div class="nav-section-label">Data</div><div class="nav-sub"><div class="nav-item"><span class="icon">&gt;</span> Overview</div><div class="nav-item"><span class="icon">&gt;</span> API Keys</div><div class="nav-item"><span class="icon">&uarr;</span> Upload CSV</div><div class="nav-item active"><span class="icon">&bull;</span> Live Stream</div></div></div></div>
+      <div class="sidebar-footer"><div class="org-switcher"><div class="org-avatar">S</div><div class="org-info"><div class="org-name">ShopCo</div><div class="org-role">Owner</div></div></div></div>
+    </div>
+    <div class="main">
+      <div class="topbar">
+        <div class="breadcrumbs"><a href="#" onclick="showScreen('data')">Data</a> <span>/</span> <span class="current">Live Stream</span></div>
+        <div class="topbar-right">
+          <div class="connection-status"><span class="connection-dot connected"></span> Connected</div>
+          <button class="btn btn-outline btn-sm" style="width:auto">Pause</button>
+          <button class="btn btn-outline btn-sm" style="width:auto">Clear</button>
+        </div>
+      </div>
+      <div class="content" style="padding:0">
+        <div style="padding:12px 24px;background:white;border-bottom:1px solid var(--border);display:flex;gap:8px">
+          <select class="form-select" style="width:auto;padding:6px 10px;font-size:12px"><option>All Types</option><option>purchase</option><option>page_view</option><option>error</option><option>signup</option></select>
+          <select class="form-select" style="width:auto;padding:6px 10px;font-size:12px"><option>All Sources</option><option>api</option><option>csv</option><option>webhook</option></select>
+          <div style="margin-left:auto;color:var(--text-muted);font-size:12px;display:flex;align-items:center;gap:16px">
+            <span>Events: <strong style="color:var(--text-primary)">1,247</strong> in last hour</span>
+            <span>Rate: <strong style="color:var(--text-primary)">~3.5/sec</strong></span>
+          </div>
+        </div>
+        <div style="font-family:'SF Mono','Fira Code',Consolas,monospace;font-size:12px;background:var(--content-bg)">
+          <div class="stream-event" style="background:#f0fdf4">
+            <span class="stream-time">14:32:01.234</span>
+            <span class="stream-type purchase">purchase</span>
+            <span class="stream-actor">user-8842</span>
+            <span style="color:var(--text-muted);margin-right:8px">api</span>
+            <span class="stream-props">{amount: 79.99, product: "Running Shoes", category: "footwear"}</span>
+          </div>
+          <div class="stream-event">
+            <span class="stream-time">14:31:58.891</span>
+            <span class="stream-type page_view">page_view</span>
+            <span class="stream-actor">user-1234</span>
+            <span style="color:var(--text-muted);margin-right:8px">api</span>
+            <span class="stream-props">{url: "/products", referrer: "/home", duration_ms: 3200}</span>
+          </div>
+          <div class="stream-event">
+            <span class="stream-time">14:31:45.102</span>
+            <span class="stream-type error">error</span>
+            <span class="stream-actor">-</span>
+            <span style="color:var(--text-muted);margin-right:8px">webhook</span>
+            <span class="stream-props">{code: 500, message: "Internal Server Error", service: "payments"}</span>
+          </div>
+          <div class="stream-event">
+            <span class="stream-time">14:31:42.778</span>
+            <span class="stream-type signup">signup</span>
+            <span class="stream-actor">user-9001</span>
+            <span style="color:var(--text-muted);margin-right:8px">api</span>
+            <span class="stream-props">{plan: "free", source: "google_ads"}</span>
+          </div>
+          <div class="stream-event">
+            <span class="stream-time">14:31:39.445</span>
+            <span class="stream-type purchase">purchase</span>
+            <span class="stream-actor">user-5567</span>
+            <span style="color:var(--text-muted);margin-right:8px">api</span>
+            <span class="stream-props">{amount: 149.99, product: "Premium Jacket", category: "outerwear"}</span>
+          </div>
+          <div class="stream-event">
+            <span class="stream-time">14:31:35.112</span>
+            <span class="stream-type page_view">page_view</span>
+            <span class="stream-actor">user-3321</span>
+            <span style="color:var(--text-muted);margin-right:8px">api</span>
+            <span class="stream-props">{url: "/checkout", referrer: "/cart", duration_ms: 1800}</span>
+          </div>
+          <div class="stream-event">
+            <span class="stream-time">14:31:32.889</span>
+            <span class="stream-type purchase">purchase</span>
+            <span class="stream-actor">user-7712</span>
+            <span style="color:var(--text-muted);margin-right:8px">api</span>
+            <span class="stream-props">{amount: 29.99, product: "Baseball Cap", category: "accessories"}</span>
+          </div>
+          <div class="stream-event">
+            <span class="stream-time">14:31:28.556</span>
+            <span class="stream-type error">error</span>
+            <span class="stream-actor">-</span>
+            <span style="color:var(--text-muted);margin-right:8px">webhook</span>
+            <span class="stream-props">{code: 429, message: "Rate limit exceeded", service: "search"}</span>
+          </div>
+          <div class="stream-event">
+            <span class="stream-time">14:31:25.223</span>
+            <span class="stream-type signup">signup</span>
+            <span class="stream-actor">user-9002</span>
+            <span style="color:var(--text-muted);margin-right:8px">api</span>
+            <span class="stream-props">{plan: "pro", source: "referral"}</span>
+          </div>
+          <div class="stream-event">
+            <span class="stream-time">14:31:21.990</span>
+            <span class="stream-type page_view">page_view</span>
+            <span class="stream-actor">user-4456</span>
+            <span style="color:var(--text-muted);margin-right:8px">api</span>
+            <span class="stream-props">{url: "/pricing", referrer: "/features", duration_ms: 5400}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SCREEN: SETTINGS - TEAM ===== -->
+<div id="screen-settings-team" class="screen">
+  <div class="platform">
+    <div class="sidebar">
+      <div class="sidebar-header"><div class="logo">A</div><span>Analytics</span></div>
+      <div class="sidebar-nav"><div class="nav-item"><span class="icon">#</span> Dashboards</div><div class="nav-item"><span class="icon">!</span> Alerts</div><div class="nav-section"><div class="nav-section-label">Data</div><div class="nav-sub"><div class="nav-item"><span class="icon">&gt;</span> API Keys</div><div class="nav-item"><span class="icon">&uarr;</span> Upload CSV</div></div></div><div class="nav-section"><div class="nav-section-label">Settings</div><div class="nav-sub"><div class="nav-item"><span class="icon">&bull;</span> Organization</div><div class="nav-item active"><span class="icon">&bull;</span> Team</div><div class="nav-item"><span class="icon">&bull;</span> Profile</div></div></div></div>
+      <div class="sidebar-footer"><div class="org-switcher"><div class="org-avatar">S</div><div class="org-info"><div class="org-name">ShopCo</div><div class="org-role">Owner</div></div></div></div>
+    </div>
+    <div class="main">
+      <div class="topbar"><div class="breadcrumbs"><span>Settings</span> <span>/</span> <span class="current">Team</span></div><div class="topbar-right"><button class="icon-btn">&#128276;</button><button class="user-btn"><div class="user-avatar">AS</div></button></div></div>
+      <div class="content" style="max-width:720px">
+        <div class="page-header"><h1>Team Members</h1><button class="btn btn-primary" style="width:auto">+ Invite Member</button></div>
+
+        <div class="card">
+          <div class="card-body">
+            <div class="member-row">
+              <div class="member-avatar" style="background:#2563eb">AS</div>
+              <div class="member-info"><div class="name">Alice Smith <span style="color:var(--text-muted);font-size:12px">(you)</span></div><div class="email">alice@shopco.com</div></div>
+              <span class="status status-active" style="font-size:12px">Owner</span>
+            </div>
+            <div class="member-row">
+              <div class="member-avatar" style="background:#7c3aed">BJ</div>
+              <div class="member-info"><div class="name">Bob Jones</div><div class="email">bob@shopco.com</div></div>
+              <select class="role-select"><option selected>Admin</option><option>Analyst</option><option>Viewer</option></select>
+              <button class="btn btn-ghost btn-sm" style="color:var(--error)">Remove</button>
+            </div>
+            <div class="member-row">
+              <div class="member-avatar" style="background:#0ea5e9">CL</div>
+              <div class="member-info"><div class="name">Carol Lee</div><div class="email">carol@shopco.com</div></div>
+              <select class="role-select"><option>Admin</option><option selected>Analyst</option><option>Viewer</option></select>
+              <button class="btn btn-ghost btn-sm" style="color:var(--error)">Remove</button>
+            </div>
+          </div>
+        </div>
+
+        <h3 style="font-size:15px;font-weight:600;margin:24px 0 12px">Pending Invitations</h3>
+        <div class="card">
+          <div class="card-body">
+            <div class="member-row">
+              <div class="member-avatar" style="background:#94a3b8">?</div>
+              <div class="member-info"><div class="name" style="color:var(--text-secondary)">Pending</div><div class="email">dave@shopco.com</div></div>
+              <span style="color:var(--text-muted);font-size:13px">Invited as Viewer &bull; May 14</span>
+              <button class="btn btn-ghost btn-sm" style="color:var(--error)">Revoke</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.proto-nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+  // Find and activate the matching nav button
+  document.querySelectorAll('.proto-nav button').forEach(b => {
+    if (b.getAttribute('onclick') === "showScreen('" + name + "')") {
+      b.classList.add('active');
+    }
+  });
+  window.scrollTo(0, 0);
+}
+</script>
+</body>
+</html>
